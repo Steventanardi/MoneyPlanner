@@ -9,16 +9,15 @@ const PullToRefresh = ({ onRefresh, children }) => {
     const controls = useAnimation();
     const threshold = 100;
 
-    const handleDrag = (event, info) => {
-        if (isRefreshing) return;
-        
-        // Only allow pulling down if at the very top of the container
-        const scrollTop = containerRef.current?.scrollTop || 0;
-        if (scrollTop > 0) {
-            setPullDistance(0);
-            return;
-        }
+    const [isAtTop, setIsAtTop] = useState(true);
 
+    const handleScroll = (e) => {
+        setIsAtTop(e.target.scrollTop === 0);
+    };
+
+    const handleDrag = (event, info) => {
+        if (isRefreshing || !isAtTop) return;
+        
         if (info.offset.y > 0) {
             const resistance = 0.4;
             setPullDistance(info.offset.y * resistance);
@@ -50,6 +49,7 @@ const PullToRefresh = ({ onRefresh, children }) => {
     return (
         <div 
             ref={containerRef}
+            onScroll={handleScroll}
             className="no-scrollbar"
             style={{ 
                 position: 'relative', 
@@ -57,7 +57,7 @@ const PullToRefresh = ({ onRefresh, children }) => {
                 height: '100%', 
                 overflowY: 'auto',
                 overflowX: 'hidden',
-                backgroundColor: 'inherit'
+                touchAction: isAtTop && pullDistance > 0 ? 'none' : 'auto'
             }}
         >
             {/* Pull Indicator Area */}
@@ -71,7 +71,7 @@ const PullToRefresh = ({ onRefresh, children }) => {
                 alignItems: 'center',
                 justifyContent: 'center',
                 overflow: 'hidden',
-                zIndex: 4000, // Higher than most things except essential overlays
+                zIndex: 4000,
                 background: 'transparent',
                 pointerEvents: 'none'
             }}>
@@ -98,11 +98,12 @@ const PullToRefresh = ({ onRefresh, children }) => {
                 </motion.div>
             </div>
 
-            {/* Content Area - This becomes the drag target */}
+            {/* Content Area - Only drag if we are at the top */}
             <motion.div
                 drag="y"
                 dragConstraints={{ top: 0, bottom: 0 }}
                 dragElastic={0.6}
+                dragListener={isAtTop && !isRefreshing}
                 onDrag={handleDrag}
                 onDragEnd={handleDragEnd}
                 animate={{ y: isRefreshing ? (threshold / 2) : pullDistance }}
