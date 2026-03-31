@@ -11,10 +11,18 @@ const Modal = ({ isOpen, onClose, title, children }) => {
             document.body.style.height = 'unset';
         }
         return () => {
-            document.body.style.overflow = 'unset';
-            document.body.style.height = 'unset';
+             document.body.style.overflow = 'unset';
+             document.body.style.height = 'unset';
         };
     }, [isOpen]);
+
+    // Snappier, high-end spring transition
+    const transition = {
+        type: 'spring',
+        damping: 32,
+        stiffness: 350,
+        mass: 0.8
+    };
 
     return (
         <AnimatePresence>
@@ -35,11 +43,14 @@ const Modal = ({ isOpen, onClose, title, children }) => {
                         }}
                         initial={{ y: '100%' }}
                         animate={{ y: 0 }}
-                        exit={{ y: '100%' }}
-                        transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+                        exit={{ y: '110%' }}
+                        transition={transition}
                         className="modal-content" 
                         onClick={e => e.stopPropagation()}
-                        style={{ overflowY: 'visible' }}
+                        style={{ 
+                            overflowY: 'visible',
+                            willChange: 'transform'
+                        }}
                     >
                         {/* Drag Handle Indicator */}
                         <div style={{ 

@@ -89,7 +89,18 @@ const Dashboard = () => {
         return Object.entries(cats)
             .map(([name, value]) => ({ name, value }))
             .sort((a, b) => b.value - a.value)
-            .slice(0, 4);
+            .slice(0, 5);
+    }, [activeMonthTransactions]);
+
+    const topIncomeCategories = useMemo(() => {
+        const cats = {};
+        activeMonthTransactions.filter(t => t.type === 'income').forEach(t => {
+            cats[t.category] = (cats[t.category] || 0) + t.amount;
+        });
+        return Object.entries(cats)
+            .map(([name, value]) => ({ name, value }))
+            .sort((a, b) => b.value - a.value)
+            .slice(0, 5);
     }, [activeMonthTransactions]);
 
     return (
@@ -475,10 +486,7 @@ const Dashboard = () => {
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
                         {(statModal?.type === 'Expenses' || statModal?.type === 'Income') && (
-                            (statModal.type === 'Expenses' ? topCategories : Array.from((activeMonthTransactions.filter(t => t.type === 'income') || []).reduce((acc, t) => {
-                                acc.set(t.category, (acc.get(t.category) || 0) + t.amount);
-                                return acc;
-                            }, new Map())).map(([name, value]) => ({ name, value }))).slice(0, 5).map(cat => (
+                            (statModal.type === 'Expenses' ? topCategories : topIncomeCategories).map(cat => (
                             <div key={cat.name} className="card glass-card" style={{ padding: '16px 20px', borderRadius: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 0 }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                                     <div style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: statModal.type === 'Expenses' ? 'var(--accent-primary)' : '#34C759' }} />

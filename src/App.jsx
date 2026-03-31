@@ -10,6 +10,7 @@ import BankTracker from './screens/BankTracker';
 import Recurring from './screens/Recurring';
 import History from './screens/History';
 import Login from './screens/Login';
+import PullToRefresh from './components/PullToRefresh';
 
 const App = () => {
     const { 
@@ -122,7 +123,14 @@ const App = () => {
                         }}
                         style={{ width: '100%', height: '100%' }}
                     >
-                        {renderScreen()}
+                        <PullToRefresh onRefresh={async () => {
+                            await syncWithSupabase();
+                            // Optional: Small delay to let sync finish before reload if desired
+                            // Or just window.location.reload() to get latest vercel
+                            setTimeout(() => window.location.reload(), 500);
+                        }}>
+                            {renderScreen()}
+                        </PullToRefresh>
                     </motion.div>
                 </AnimatePresence>
             </main>
