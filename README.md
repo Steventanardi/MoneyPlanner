@@ -1,6 +1,12 @@
 # 💰 Money Planner — Premium Personal Finance Tracker
 
+<div align="center">
+
 ![Money Planner Hero Banner](./docs/assets/hero_banner.png)
+
+**Transform your financial life with clarity and style.**
+
+[Live Demo](https://moneyplanner-demo.vercel.app/) • [Report Bug](https://github.com/Steventanardi/MoneyPlanner/issues) • [Request Feature](https://github.com/Steventanardi/MoneyPlanner/issues)
 
 [![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
 [![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://react.dev/)
@@ -8,79 +14,110 @@
 [![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
 [![Framer Motion](https://img.shields.io/badge/Framer_Motion-0055FF?style=for-the-badge&logo=framer&logoColor=white)](https://www.framer.com/motion/)
 
-A high-end, privacy-focused financial management application built with **React 19**, **Vite**, and **Supabase**. Designed with a premium glassmorphic aesthetic and smooth micro-interactions to make managing your money feel like a breeze.
+</div>
 
-## ✨ Key Features
+---
 
--   **🏦 Smart Bank Management**: Seamlessly manage multiple banks, wallets, and joint accounts with real-time balance tracking.
--   **📈 Advanced Insights**: Visualize your spending habits with dynamic **Recharts** area and bar charts.
--   **💎 Premium UX/UI**: Fully responsive design with **Glassmorphism**, dark mode support, and buttery-smooth **Framer Motion** transitions.
--   **🛡️ Emergency Fund Tracker**: Dedicated tracking for your liquid safety net with adjustable reserve goals.
--   **🔄 Recurring Items**: Never miss a subscription or bill with automated recurring transaction management.
--   **📂 Data Portability**: Export your entire financial history to CSV for deep analysis in Excel/Sheets.
--   **🌍 Multi-Currency Support**: Real-time exchange rate updates (TWD/IDR and more) to keep your global finances in check.
--   **📱 Progressive Web App (PWA)**: Installable on your mobile device for an app-like experience without the App Store.
+## 🌟 Overview
+
+**Money Planner** is a high-end, privacy-conscious financial management application crafted for those who value both aesthetics and functionality. Built with **React 19**, **Vite**, and **Supabase**, it delivers a premium experience with glassmorphic visuals and smooth interactive elements.
+
+Whether you're tracking daily expenses, managing multiple bank accounts, or planning for emergencies, Money Planner provides the tools you need in one beautiful interface.
+
+---
+
+## ✨ Features Key
+
+### 📂 Smart Asset Management
+- **🏦 Multi-Bank Support**: Track balances across personal, joint, and savings accounts.
+- **🛡️ Emergency Fund**: Dedicated tracker with goal-based liquid reserve monitoring.
+- **🔄 Recurring Transactions**: Automate tracking for subscriptions, bills, and regular income.
+
+### 📊 Powerful Insights
+- **📈 Interactive Charts**: Dynamic data visualization using **Recharts** (Area, Bar, and Pie).
+- **🌍 Global Finance**: Real-time exchange rate updates for international travelers (TWD/IDR default).
+- **📉 Spending Breakdown**: Detailed category-wise analysis of your financial habits.
+
+### 💎 Premium User Experience
+- **🎨 Glassmorphism & Dark Mode**: A stunning UI designed for modern readability.
+- **✨ Micro-interactions**: Buttery-smooth transitions powered by **Framer Motion**.
+- **📱 PWA Ready**: Install as a standalone app on your mobile device or desktop.
+- **🚀 Ultra-fast Performance**: Powered by Vite and TanStack Query for instant data sync.
+
+---
 
 ## 🛠️ Tech Stack
 
--   **Core**: React 19, Vite
--   **State Management**: Zustand
--   **Data Fetching**: TanStack Query (React Query)
--   **Database & Auth**: Supabase
--   **Animations**: Framer Motion
--   **Icons**: Lucide React
--   **Charts**: Recharts
--   **Styling**: Modern CSS with HSL variables
--   **OCR**: Tesseract.js (for future receipt scanning features)
+- **Frontend**: [React 19](https://react.dev/), [Vite](https://vitejs.dev/)
+- **Styling**: [Tailwind CSS](https://tailwindcss.com/), [Lucide Icons](https://lucide.dev/)
+- **Animations**: [Framer Motion](https://www.framer.com/motion/)
+- **Backend/DB**: [Supabase](https://supabase.com/) (PostgreSQL + Auth)
+- **State Management**: [Zustand](https://docs.pmnd.rs/zustand/getting-started/introduction)
+- **Data Fetching**: [TanStack Query](https://tanstack.com/query/latest)
+- **Charts**: [Recharts](https://recharts.org/)
+- **Utilities**: [Tesseract.js](https://tesseract.projectnaptha.com/) (OCR Scanning)
+
+---
 
 ## 🚀 Getting Started
 
-### Prerequisites
+### 1. Prerequisites
+- **Node.js**: `v20.0.0` or higher
+- **Supabase Account**: A project with PostgreSQL and Auth enabled.
 
--   **Node.js**: `v20.0.0` or higher
--   **npm**: Installed with Node.js
+### 2. Environment Setup
+Create a `.env` file in the root directory and add your Supabase credentials:
+```env
+VITE_SUPABASE_URL=your-project-url.supabase.co
+VITE_SUPABASE_ANON_KEY=your-anon-role-key
+```
+*(See `.env.example` for details)*
 
-### Installation
+### 3. Installation & Run
+```bash
+# Clone the repository
+git clone https://github.com/Steventanardi/MoneyPlanner.git
 
-1.  **Clone the repository**:
-    ```bash
-    git clone https://github.com/Steventanardi/MoneyPlanner.git
-    cd MoneyPlanner
-    ```
+# Enter the directory
+cd MoneyPlanner
 
-2.  **Install dependencies**:
-    ```bash
-    npm install
-    ```
+# Install dependencies
+npm install
 
-3.  **Run the development server**:
-    ```bash
-    npm run dev
-    ```
+# Start development server
+npm run dev
+```
 
-4.  **Access the app**:
-    Open [http://localhost:5173](http://localhost:5173) in your browser.
+The application will be available at `http://localhost:5173`.
 
-## 📜 Deployment
+---
 
-The project is optimized for deployment on **Vercel** or **Netlify**. Ensure you set up your Supabase environment variables in your deployment dashboard.
+## 🗺️ Roadmap
 
-## 🤝 Contributing
+- [ ] **AI-Powered OCR**: Smart receipt scanning and automatic category detection.
+- [ ] **Budget Forecasting**: Predictive analysis based on spending history.
+- [ ] **Investment Tracker**: Integrate stock and crypto portfolio monitoring.
+- [ ] **Multi-user Wallets**: Share specific wallets with family members or friends.
 
-Contributions are what make the open source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
-
-1. Fork the Project
-2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the Branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+---
 
 ## 👤 Author
 
 **Steven Tanardi**
-- GitHub: [@Steventanardi](https://github.com/Steventanardi)
-- University: National Quemoy University (國立金門大學)
+*Computer Science Student*
+**National Quemoy University (國立金門大學)**
+
+[![GitHub](https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white)](https://github.com/Steventanardi)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/steventanardi/)
 
 ---
 
-Developed with ❤️ for better financial clarity.
+## ⚖️ License
+
+Distributed under the MIT License. See `LICENSE` for more information.
+
+---
+
+<p align="center">
+  Developed with ❤️ by Steven Tanardi
+</p>
