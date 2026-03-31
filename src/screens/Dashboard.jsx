@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
     TrendingUp, 
     TrendingDown, 
@@ -40,6 +40,7 @@ const Dashboard = () => {
     const emergencyFund = data.emergencyFund || 20000;
     const [statModal, setStatModal] = React.useState(null);
     const [isEditingEmergency, setIsEditingEmergency] = React.useState(false);
+    const [showQuickAdd, setShowQuickAdd] = React.useState(false);
 
     // Filtering user-specific data
     const userTransactions = useMemo(() => 
@@ -192,6 +193,24 @@ const Dashboard = () => {
                     </div>
                 </div>
 
+                {/* Quick Actions - Moved Higher */}
+                <div style={{ margin: '24px 0', display: 'flex', gap: '12px' }}>
+                    <button className="btn-primary" style={{ flex: 1, height: '64px', fontSize: '17px', borderRadius: '24px' }} onClick={() => useStore.getState().setIsAddingTransaction(true)}>
+                        <Plus size={24} /> New Entry
+                    </button>
+                    <button 
+                        className="card" 
+                        style={{ 
+                            width: '64px', height: '64px', marginBottom: 0, 
+                            display: 'flex', alignItems: 'center', justifyContent: 'center', 
+                            borderRadius: '24px', cursor: 'pointer', border: '1px solid var(--glass-border)' 
+                        }} 
+                        onClick={() => setActiveScreen('banks')}
+                    >
+                        <Banknote size={28} color="var(--text-secondary)" />
+                    </button>
+                </div>
+
                 {/* Interactive 4 Sections Grid */}
                 <div style={{ margin: '24px 0', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                     {/* Income Card */}
@@ -265,24 +284,6 @@ const Dashboard = () => {
                             <ChevronRight size={18} color="var(--text-secondary)" />
                         </div>
                     </motion.div>
-                </div>
-
-                {/* Quick Actions */}
-                <div style={{ margin: '24px 0', display: 'flex', gap: '12px' }}>
-                    <button className="btn-primary" style={{ flex: 1, height: '64px', fontSize: '17px', borderRadius: '24px' }} onClick={() => useStore.getState().setIsAddingTransaction(true)}>
-                        <Plus size={24} /> New Entry
-                    </button>
-                    <button 
-                        className="card" 
-                        style={{ 
-                            width: '64px', height: '64px', marginBottom: 0, 
-                            display: 'flex', alignItems: 'center', justifyContent: 'center', 
-                            borderRadius: '24px', cursor: 'pointer', border: '1px solid var(--glass-border)' 
-                        }} 
-                        onClick={() => setActiveScreen('banks')}
-                    >
-                        <Banknote size={28} color="var(--text-secondary)" />
-                    </button>
                 </div>
 
                 {/* Insights Section */}
@@ -385,7 +386,7 @@ const Dashboard = () => {
             {/* Stat Detail Modal */}
             <Modal
                 isOpen={!!statModal}
-                onClose={() => { setStatModal(null); setIsEditingEmergency(false); }}
+                onClose={() => { setStatModal(null); setIsEditingEmergency(false); setShowQuickAdd(false); }}
                 title={statModal?.type + " Details"}
             >
                 <div style={{ textAlign: 'center', padding: '10px 0 20px' }}>
@@ -437,9 +438,40 @@ const Dashboard = () => {
                 
                 <div style={{ padding: '20px 0' }}>
                 <div style={{ padding: '0 0 20px' }}>
-                    <h4 style={{ fontSize: '13px', fontWeight: '800', color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: '16px' }}>
-                        {statModal?.type === 'Expenses' ? 'Breakdown by Category' : statModal?.type === 'Income' ? 'Breakdown by Source' : statModal?.type === 'Savings' ? 'Assets Location' : 'Allocation Breakdown'}
-                    </h4>
+                    <div className="flex-between" style={{ marginBottom: '16px' }}>
+                        <h4 style={{ fontSize: '13px', fontWeight: '800', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>
+                            {statModal?.type === 'Expenses' ? 'Breakdown by Category' : statModal?.type === 'Income' ? 'Breakdown by Source' : statModal?.type === 'Savings' ? 'Assets Location' : 'Allocation Breakdown'}
+                        </h4>
+                        {(statModal?.type === 'Income' || statModal?.type === 'Expenses') && (
+                            <button 
+                                onClick={() => setShowQuickAdd(!showQuickAdd)}
+                                style={{ background: 'var(--input-bg)', border: 'none', padding: '6px 12px', borderRadius: '10px', color: 'var(--accent-primary)', fontSize: '11px', fontWeight: '900', cursor: 'pointer' }}
+                            >
+                                {showQuickAdd ? 'CANCEL ADD' : '+ QUICK ADD'}
+                            </button>
+                        )}
+                    </div>
+
+                    <AnimatePresence>
+                        {showQuickAdd && (statModal?.type === 'Income' || statModal?.type === 'Expenses') && (
+                            <motion.div 
+                                initial={{ height: 0, opacity: 0 }}
+                                animate={{ height: 'auto', opacity: 1 }}
+                                exit={{ height: 0, opacity: 0 }}
+                                style={{ overflow: 'hidden', marginBottom: '24px' }}
+                            >
+                                <div style={{ padding: '20px', background: 'var(--input-bg)', borderRadius: '24px', border: '1px solid var(--glass-border)' }}>
+                                    <TransactionForm 
+                                        initialData={{ type: statModal.type === 'Income' ? 'income' : 'expense' }} 
+                                        onComplete={() => {
+                                            setShowQuickAdd(false);
+                                            // Optional: update local stats if needed, but the store handles it
+                                        }} 
+                                    />
+                                </div>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
                         {(statModal?.type === 'Expenses' || statModal?.type === 'Income') && (
@@ -506,10 +538,6 @@ const Dashboard = () => {
                     )}
                 </div>
                 </div>
-
-                <button onClick={() => setStatModal(null)} className="btn-primary" style={{ marginTop: '30px', height: '84px', fontSize: '20px', borderRadius: '28px' }}>
-                    Close Detailed View
-                </button>
             </Modal>
 
             <Modal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} title="My Profile">

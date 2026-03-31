@@ -27,15 +27,28 @@ const Modal = ({ isOpen, onClose, title, children }) => {
                     onClick={onClose}
                 >
                     <motion.div 
+                        drag="y"
+                        dragConstraints={{ top: 0 }}
+                        dragElastic={0.2}
+                        onDragEnd={(_, info) => {
+                            if (info.offset.y > 100) onClose();
+                        }}
                         initial={{ y: '100%' }}
                         animate={{ y: 0 }}
                         exit={{ y: '100%' }}
                         transition={{ type: 'spring', damping: 25, stiffness: 300 }}
                         className="modal-content" 
                         onClick={e => e.stopPropagation()}
+                        style={{ overflowY: 'visible' }}
                     >
+                        {/* Drag Handle Indicator */}
+                        <div style={{ 
+                            width: '40px', height: '6px', background: 'var(--text-secondary)', opacity: 0.3, 
+                            borderRadius: '3px', position: 'absolute', top: '12px', left: '50%', transform: 'translateX(-50%)' 
+                        }} />
+
                         {/* macOS Header Style */}
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px', marginTop: '10px' }}>
                             <div style={{ display: 'flex', gap: '8px' }}>
                                 {/* MacBook Style Red Dot */}
                                 <div 
@@ -55,13 +68,7 @@ const Modal = ({ isOpen, onClose, title, children }) => {
                             <div style={{ width: '52px' }} /> {/* Spacer */}
                         </div>
 
-                        {/* Drag Handle Indicator */}
-                        <div style={{ 
-                            width: '40px', height: '4px', background: 'var(--text-secondary)', opacity: 0.2, 
-                            borderRadius: '2px', position: 'absolute', top: '12px', left: '50%', transform: 'translateX(-50%)' 
-                        }} />
-
-                        <div className="modal-body no-scrollbar" style={{ maxHeight: '70vh', overflowY: 'auto' }}>
+                        <div className="modal-body no-scrollbar" style={{ maxHeight: 'calc(90vh - 100px)', overflowY: 'auto' }}>
                             {children}
                         </div>
                     </motion.div>
