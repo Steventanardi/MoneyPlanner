@@ -109,7 +109,9 @@ const Settings = () => {
         data, 
         deleteCategory,
         syncWithSupabase,
-        lastSyncedAt
+        lastSyncedAt,
+        toggleBiometrics,
+        userBiometrics
     } = useStore();
     const [isCatModalOpen, setIsCatModalOpen] = useState(false);
 
@@ -238,17 +240,34 @@ const Settings = () => {
                 {/* Data & Security */}
                 <section>
                     <h3 style={{ fontSize: '11px', fontWeight: '800', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '12px', marginLeft: '8px' }}>Security & Storage</h3>
-                    <div className="card" style={{ padding: '24px', borderRadius: '28px', background: 'var(--input-bg)', border: '1px solid var(--glass-border)' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
-                            <Shield size={20} color="var(--accent-success)" />
-                            <div style={{ fontSize: '14px', fontWeight: '700' }}>Last Cloud Update</div>
+                    <div className="card" style={{ padding: '0 4px', borderRadius: '24px', display: 'flex', flexDirection: 'column', gap: '1px', background: 'var(--glass-border)', marginBottom: '16px' }}>
+                        <div style={{ padding: '16px 18px', background: 'var(--card-bg)', borderRadius: '20px 20px 4px 4px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                <div style={{ color: 'var(--accent-primary)' }}><Shield size={20} /></div>
+                                <span style={{ fontWeight: '700', fontSize: '15px' }}>Face ID / Biometrics</span>
+                            </div>
+                            <div 
+                                onClick={toggleBiometrics}
+                                style={{ width: '52px', height: '28px', background: userBiometrics[currentUser.id] ? 'var(--accent-success)' : 'var(--input-bg)', borderRadius: '14px', position: 'relative', cursor: 'pointer', transition: '0.3s' }}
+                            >
+                                <motion.div 
+                                    animate={{ x: userBiometrics[currentUser.id] ? 26 : 2 }}
+                                    style={{ width: '24px', height: '24px', background: 'white', borderRadius: '50%', position: 'absolute', top: '2px', boxShadow: '0 2px 4px rgba(0,0,0,0.2)' }}
+                                />
+                            </div>
                         </div>
-                        <div style={{ fontSize: '12px', color: 'var(--text-secondary)', fontWeight: '500', marginBottom: '20px' }}>
-                            {lastSyncedAt ? `Synchronized on ${new Date(lastSyncedAt).toLocaleString()}` : "Not yet synchronized with cloud."}
-                        </div>
-                        <div style={{ display: 'flex', gap: '10px' }}>
-                            <button onClick={syncWithSupabase} style={{ flex: 1, height: '44px', background: 'var(--accent-primary)', color: 'white', border: 'none', borderRadius: '12px', fontWeight: '800', fontSize: '13px', cursor: 'pointer' }}>Sync Now</button>
-                            <button onClick={handleExport} style={{ flex: 1, height: '44px', background: 'var(--card-bg)', color: 'var(--text-primary)', border: '1px solid var(--glass-border)', borderRadius: '12px', fontWeight: '800', fontSize: '13px', cursor: 'pointer' }}>Export CSV</button>
+                        <div style={{ padding: '24px', background: 'var(--card-bg)', borderRadius: '4px 4px 20px 20px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', opacity: 0.8 }}>
+                                <TrendingUp size={16} color="var(--accent-success)" />
+                                <div style={{ fontSize: '13px', fontWeight: '700' }}>Last Cloud Update</div>
+                            </div>
+                            <div style={{ fontSize: '12px', color: 'var(--text-secondary)', fontWeight: '500' }}>
+                                {lastSyncedAt ? `Synchronized on ${new Date(lastSyncedAt).toLocaleString()}` : "Not yet synchronized with cloud."}
+                            </div>
+                            <div style={{ display: 'flex', gap: '10px', marginTop: '8px' }}>
+                                <button onClick={syncWithSupabase} style={{ flex: 1, height: '44px', background: 'var(--accent-primary)', color: 'white', border: 'none', borderRadius: '12px', fontWeight: '800', fontSize: '13px', cursor: 'pointer' }}>Sync Now</button>
+                                <button onClick={handleExport} style={{ flex: 1, height: '44px', background: 'var(--card-bg)', color: 'var(--text-primary)', border: '1px solid var(--glass-border)', borderRadius: '12px', fontWeight: '800', fontSize: '13px', cursor: 'pointer' }}>Export CSV</button>
+                            </div>
                         </div>
                     </div>
                 </section>

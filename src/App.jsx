@@ -57,7 +57,7 @@ const App = () => {
         // --- Security Timeout ---
         const checkTimeout = () => {
              const state = useStore.getState();
-             if (state.currentUser && (Date.now() - state.lastActive > 5 * 60 * 1000)) {
+             if (state.currentUser && (Date.now() - state.lastActive > 1 * 60 * 1000)) {
                  logout();
              }
         };

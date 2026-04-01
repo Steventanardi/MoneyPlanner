@@ -38,6 +38,7 @@ export const useStore = create(
       activeScreen: 'dashboard',
       theme: 'light',
       userThemes: {}, // {userId: 'light' | 'dark'}
+      userBiometrics: {}, // {userId: boolean}
       lastActive: Date.now(),
       isSyncing: false,
       lastSyncedAt: null,
@@ -62,6 +63,12 @@ export const useStore = create(
         const newUserThemes = { ...userThemes };
         if (currentUser) newUserThemes[currentUser.id] = newTheme;
         set({ theme: newTheme, userThemes: newUserThemes });
+      },
+      toggleBiometrics: () => {
+        const { currentUser, userBiometrics } = get();
+        if (!currentUser) return;
+        const newUserBiometrics = { ...userBiometrics, [currentUser.id]: !userBiometrics[currentUser.id] };
+        set({ userBiometrics: newUserBiometrics });
       },
       setLastActive: () => set({ lastActive: Date.now() }),
       fetchExchangeRate: async () => {
@@ -272,7 +279,9 @@ export const useStore = create(
           data: state.data, 
           currentUser: state.currentUser, 
           currency: state.currency,
-          theme: state.theme 
+          theme: state.theme,
+          userThemes: state.userThemes,
+          userBiometrics: state.userBiometrics
       })
     }
   )

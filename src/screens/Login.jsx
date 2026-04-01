@@ -4,11 +4,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Users, User, ArrowRight, ShieldCheck, Coins, ChevronLeft, Delete, ScanFace, CheckCircle2 } from 'lucide-react';
 
 const Login = () => {
-    const { setCurrentUser } = useStore();
+    const { setCurrentUser, userBiometrics } = useStore();
     const [selectedUser, setSelectedUser] = useState(null);
     const [pin, setPin] = useState('');
     const [error, setError] = useState(false);
-    const [status, setStatus] = useState('idle'); // 'idle', 'loading', 'scanning', 'success'
+    const [status, setStatus] = useState('idle'); // 'idle', 'loading', 'scanning', 'success', 'failed'
 
     const handleUserSelect = (user) => {
         setSelectedUser(user);
@@ -44,13 +44,27 @@ const Login = () => {
     };
 
     const handleFaceID = () => {
+        if (!userBiometrics[selectedUser.id]) {
+            setStatus('failed');
+            setTimeout(() => setStatus('idle'), 2000);
+            return;
+        }
+
         setStatus('scanning');
-        // Simulate Face ID scanning process
+        // Simulate Face ID scanning process with a chance of failure (e.g. 1 in 10)
         setTimeout(() => {
-            setStatus('success');
-            setTimeout(() => {
-                handleLoginSuccess();
-            }, 1000);
+            const isSuccess = Math.random() > 0.1; 
+            if (isSuccess) {
+                setStatus('success');
+                setTimeout(() => {
+                    handleLoginSuccess();
+                }, 1000);
+            } else {
+                setStatus('failed');
+                setTimeout(() => {
+                    setStatus('idle');
+                }, 1500);
+            }
         }, 2000);
     };
 
@@ -205,7 +219,7 @@ const Login = () => {
 
             {/* Face ID Overlay */}
             <AnimatePresence>
-                {(status === 'scanning' || status === 'success') && (
+                {(status === 'scanning' || status === 'success' || status === 'failed') && (
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
@@ -220,11 +234,11 @@ const Login = () => {
                             <motion.div
                                 animate={{ 
                                     scale: status === 'success' ? [1, 1.1, 1] : 1,
-                                    opacity: status === 'success' ? 1 : 1
+                                    x: status === 'failed' ? [0, -10, 10, -10, 10, 0] : 0
                                 }}
                                 style={{ 
                                     width: '160px', height: '160px', borderRadius: '40px',
-                                    border: `2px solid ${status === 'success' ? '#34C759' : 'rgba(255,255,255,0.2)'}`,
+                                    border: `2px solid ${status === 'success' ? '#34C759' : status === 'failed' ? '#FF3B30' : 'rgba(255,255,255,0.2)'}`,
                                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                                     position: 'relative', overflow: 'hidden'
                                 }}
@@ -243,7 +257,7 @@ const Login = () => {
                                             }}
                                         />
                                     </>
-                                ) : (
+                                ) : status === 'success' ? (
                                     <motion.div
                                         initial={{ scale: 0 }}
                                         animate={{ scale: 1 }}
@@ -251,6 +265,10 @@ const Login = () => {
                                     >
                                         <CheckCircle2 size={80} color="#34C759" />
                                     </motion.div>
+                                ) : (
+                                    <div style={{ textAlign: 'center', color: '#FF3B30' }}>
+                                        <ShieldCheck size={80} />
+                                    </div>
                                 )}
                             </motion.div>
                             
@@ -258,23 +276,28 @@ const Login = () => {
                             {[0, 1, 2, 3].map(i => (
                                 <div key={i} style={{
                                     position: 'absolute', width: '20px', height: '20px',
-                                    borderTop: '3px solid white', borderLeft: '3px solid white',
+                                    borderTop: `3px solid ${status === 'failed' ? '#FF3B30' : 'white'}`, 
+                                    borderLeft: `3px solid ${status === 'failed' ? '#FF3B30' : 'white'}`,
                                     top: i < 2 ? -10 : 'auto', bottom: i >= 2 ? -10 : 'auto',
                                     left: i % 2 === 0 ? -10 : 'auto', right: i % 2 !== 0 ? -10 : 'auto',
                                     transform: `rotate(${i * 90}deg)`,
                                     opacity: status === 'success' ? 0 : 0.5,
-                                    transition: 'opacity 0.3s'
+                                    transition: 'all 0.3s'
                                 }} />
                             ))}
                         </div>
                         
                         <motion.p 
-                            animate={{ opacity: [0.5, 1, 0.5] }}
-                            transition={{ duration: 1.5, repeat: Infinity }}
-                            style={{ color: 'white', marginTop: '40px', fontSize: '18px', fontWeight: '700', letterSpacing: '0.5px' }}
+                            style={{ color: status === 'failed' ? '#FF3B30' : 'white', marginTop: '40px', fontSize: '18px', fontWeight: '700', letterSpacing: '0.5px' }}
                         >
-                            {status === 'scanning' ? 'Scanning Face...' : 'Identity Verified'}
+                            {status === 'scanning' ? 'Scanning Face...' : 
+                             status === 'success' ? 'Identity Verified' : 
+                             !userBiometrics[selectedUser.id] ? 'Biometrics Not Enrolled' : 'Face Not Recognized'}
                         </motion.p>
+                        
+                        {status === 'failed' && !userBiometrics[selectedUser.id] && (
+                             <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '13px', marginTop: '8px' }}>Enable Face ID in Settings first.</p>
+                        )}
                     </motion.div>
                 )}
             </AnimatePresence>
