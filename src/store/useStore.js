@@ -64,11 +64,46 @@ export const useStore = create(
         if (currentUser) newUserThemes[currentUser.id] = newTheme;
         set({ theme: newTheme, userThemes: newUserThemes });
       },
-      toggleBiometrics: () => {
+      toggleBiometrics: async () => {
         const { currentUser, userBiometrics } = get();
         if (!currentUser) return;
-        const newUserBiometrics = { ...userBiometrics, [currentUser.id]: !userBiometrics[currentUser.id] };
-        set({ userBiometrics: newUserBiometrics });
+
+        // If disabling, just turn it off
+        if (userBiometrics[currentUser.id]) {
+            const newUserBiometrics = { ...userBiometrics, [currentUser.id]: false };
+            set({ userBiometrics: newUserBiometrics });
+            return;
+        }
+
+        // --- REAL WEBAUTHN ENROLLMENT ---
+        try {
+            const challenge = new Uint8Array(32);
+            window.crypto.getRandomValues(challenge);
+
+            const options = {
+                publicKey: {
+                    challenge,
+                    rp: { name: "MoneyPlanner", id: window.location.hostname },
+                    user: {
+                        id: Uint8Array.from(currentUser.id, c => c.charCodeAt(0)),
+                        name: currentUser.name,
+                        displayName: currentUser.name
+                    },
+                    pubKeyCredParams: [{ type: "public-key", alg: -7 }, { type: "public-key", alg: -257 }],
+                    authenticatorSelection: { userVerification: "required", authenticatorAttachment: "platform" },
+                    timeout: 60000
+                }
+            };
+
+            const credential = await navigator.credentials.create(options);
+            if (credential) {
+                const newUserBiometrics = { ...userBiometrics, [currentUser.id]: true };
+                set({ userBiometrics: newUserBiometrics });
+            }
+        } catch (err) {
+            console.error("WebAuthn Enrollment Failed:", err);
+            alert("Enrollment failed. Ensure you are on HTTPS or localhost and biometrics are supported.");
+        }
       },
       setLastActive: () => set({ lastActive: Date.now() }),
       fetchExchangeRate: async () => {
