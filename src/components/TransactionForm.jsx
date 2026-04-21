@@ -17,7 +17,10 @@ const TransactionForm = ({ onComplete, initialData }) => {
         bankId: (data?.banks || [])[0]?.id || '',
     });
     const [receiptImage, setReceiptImage] = useState(null);
+    const [amountError, setAmountError] = useState('');
     const fileInputRef = useRef(null);
+
+    const MAX_AMOUNT = 1e12;
 
     useEffect(() => {
         if (initialData) {
@@ -53,13 +56,22 @@ const TransactionForm = ({ onComplete, initialData }) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!formData.amount || !formData.bankId) return;
+        if (!formData.bankId) return;
+
+        const inputAmount = parseFloat(formData.amount);
+        if (!Number.isFinite(inputAmount) || inputAmount <= 0) {
+            setAmountError('Enter a positive number.');
+            return;
+        }
+        if (inputAmount > MAX_AMOUNT) {
+            setAmountError('Amount is too large.');
+            return;
+        }
+        setAmountError('');
 
         const isEditing = !!initialData;
         const txId = isEditing ? initialData.id : Date.now();
 
-        // Convert the input amount back to TWD for storage
-        const inputAmount = parseFloat(formData.amount);
         const storedAmount = (currency === 'IDR' && exchangeRate) ? inputAmount / exchangeRate : inputAmount;
 
         const transactionData = {
@@ -129,16 +141,21 @@ const TransactionForm = ({ onComplete, initialData }) => {
                         type="number"
                         inputMode="decimal"
                         autoFocus
+                        min="0"
+                        step="any"
                         placeholder="0"
                         value={formData.amount}
-                        onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
-                        style={{ 
-                            fontSize: '48px', 
-                            fontWeight: '900', 
-                            textAlign: 'left', 
-                            width: '200px', 
-                            background: 'none', 
-                            border: 'none', 
+                        onChange={(e) => {
+                            setFormData({ ...formData, amount: e.target.value });
+                            if (amountError) setAmountError('');
+                        }}
+                        style={{
+                            fontSize: '48px',
+                            fontWeight: '900',
+                            textAlign: 'left',
+                            width: '200px',
+                            background: 'none',
+                            border: 'none',
                             color: 'var(--text-primary)',
                             outline: 'none',
                             padding: 0
@@ -148,6 +165,11 @@ const TransactionForm = ({ onComplete, initialData }) => {
                 {currency === 'IDR' && exchangeRate && formData.amount && (
                     <div style={{ fontSize: '12px', color: 'var(--text-secondary)', fontWeight: '600', marginTop: '4px' }}>
                         ≈ NT$ {Math.round(parseFloat(formData.amount) / exchangeRate)}
+                    </div>
+                )}
+                {amountError && (
+                    <div role="alert" style={{ fontSize: '12px', color: 'var(--accent-danger)', fontWeight: '700', marginTop: '6px' }}>
+                        {amountError}
                     </div>
                 )}
             </div>

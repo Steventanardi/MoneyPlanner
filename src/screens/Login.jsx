@@ -4,16 +4,21 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Users, User, ArrowRight, ShieldCheck, Coins, ChevronLeft, Delete, ScanFace, CheckCircle2 } from 'lucide-react';
 
 const Login = () => {
-    const { setCurrentUser, userBiometrics } = useStore();
+    const { setCurrentUser, userBiometrics, hasUserPin, setUserPin, verifyUserPin } = useStore();
     const [selectedUser, setSelectedUser] = useState(null);
     const [pin, setPin] = useState('');
     const [error, setError] = useState(false);
     const [status, setStatus] = useState('idle'); // 'idle', 'loading', 'scanning', 'success', 'failed'
+    // Setup flow: 'verify' (user has a PIN), 'setup-new' (no PIN yet), 'setup-confirm' (confirming new PIN)
+    const [mode, setMode] = useState('verify');
+    const [pendingPin, setPendingPin] = useState('');
 
     const handleUserSelect = (user) => {
         setSelectedUser(user);
         setPin('');
         setError(false);
+        setPendingPin('');
+        setMode(hasUserPin(user.id) ? 'verify' : 'setup-new');
     };
 
     const handlePinPress = (val) => {
@@ -21,7 +26,7 @@ const Login = () => {
             const newPin = pin + val;
             setPin(newPin);
             if (newPin.length === 4) {
-                validatePin(newPin);
+                handlePinComplete(newPin);
             }
         }
     };
@@ -31,8 +36,42 @@ const Login = () => {
         setError(false);
     };
 
-    const validatePin = (inputPin) => {
-        if (inputPin === selectedUser.pin) {
+    const handlePinComplete = async (inputPin) => {
+        if (mode === 'setup-new') {
+            setPendingPin(inputPin);
+            setPin('');
+            setMode('setup-confirm');
+            return;
+        }
+        if (mode === 'setup-confirm') {
+            if (inputPin === pendingPin) {
+                try {
+                    await setUserPin(selectedUser.id, inputPin);
+                    handleLoginSuccess();
+                } catch (err) {
+                    console.error('Failed to set PIN:', err);
+                    setError(true);
+                    setTimeout(() => {
+                        setPin('');
+                        setPendingPin('');
+                        setMode('setup-new');
+                        setError(false);
+                    }, 500);
+                }
+            } else {
+                setError(true);
+                setTimeout(() => {
+                    setPin('');
+                    setPendingPin('');
+                    setMode('setup-new');
+                    setError(false);
+                }, 500);
+            }
+            return;
+        }
+        // mode === 'verify'
+        const ok = await verifyUserPin(selectedUser.id, inputPin);
+        if (ok) {
             handleLoginSuccess();
         } else {
             setError(true);
@@ -154,8 +193,16 @@ const Login = () => {
                             }}>
                                 {selectedUser.id === 'girl' ? <Users size={28} /> : <User size={28} />}
                             </div>
-                            <h2 style={{ fontSize: '24px', fontWeight: '900', marginBottom: '8px' }}>Enter Passcode</h2>
-                            <p style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>Identify yourself, {selectedUser.name}</p>
+                            <h2 style={{ fontSize: '24px', fontWeight: '900', marginBottom: '8px' }}>
+                                {mode === 'setup-new' && 'Create Passcode'}
+                                {mode === 'setup-confirm' && 'Confirm Passcode'}
+                                {mode === 'verify' && 'Enter Passcode'}
+                            </h2>
+                            <p style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>
+                                {mode === 'setup-new' && `Pick a 4-digit PIN for ${selectedUser.name}`}
+                                {mode === 'setup-confirm' && 'Re-enter the PIN to confirm'}
+                                {mode === 'verify' && `Identify yourself, ${selectedUser.name}`}
+                            </p>
                         </div>
 
                         {/* PIN Dots */}
