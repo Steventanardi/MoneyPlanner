@@ -3,16 +3,13 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 const Modal = ({ isOpen, onClose, title, children }) => {
     useEffect(() => {
-        if (isOpen) {
-            document.body.style.overflow = 'hidden';
-            document.body.style.height = '100vh';
-        } else {
-            document.body.style.overflow = 'unset';
-            document.body.style.height = 'unset';
-        }
+        if (!isOpen) return;
+        const { overflow, height } = document.body.style;
+        document.body.style.overflow = 'hidden';
+        document.body.style.height = '100vh';
         return () => {
-             document.body.style.overflow = 'unset';
-             document.body.style.height = 'unset';
+            document.body.style.overflow = overflow;
+            document.body.style.height = height;
         };
     }, [isOpen]);
 
@@ -47,8 +44,7 @@ const Modal = ({ isOpen, onClose, title, children }) => {
                         transition={transition}
                         className="modal-content" 
                         onClick={e => e.stopPropagation()}
-                        style={{ 
-                            overflowY: 'visible',
+                        style={{
                             willChange: 'transform'
                         }}
                     >
