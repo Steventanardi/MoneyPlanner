@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { supabase } from '../lib/supabase';
+import { hashSecret, verifySecret } from '../lib/crypto';
 
 const INITIAL_DATA = {
   banks: [
@@ -22,8 +23,8 @@ const INITIAL_DATA = {
 };
 
 export const USERS = [
-  { id: 'steven', name: 'Steven', color: '#007AFF', avatar: 'S', pin: '2815', role: 'Owner' },
-  { id: 'girl', name: 'Priscilla', color: '#FF3B30', avatar: 'G', pin: '2424', role: 'Family' }
+  { id: 'steven', name: 'Steven', color: '#007AFF', avatar: 'S', role: 'Owner' },
+  { id: 'girl', name: 'Priscilla', color: '#FF3B30', avatar: 'G', role: 'Family' }
 ];
 
 export const useStore = create(
@@ -39,6 +40,7 @@ export const useStore = create(
       theme: 'light',
       userThemes: {}, // {userId: 'light' | 'dark'}
       userBiometrics: {}, // {userId: boolean}
+      userPinHashes: {}, // {userId: {hash, salt, iterations}} — never plaintext
       lastActive: Date.now(),
       isSyncing: false,
       lastSyncedAt: null,
@@ -57,6 +59,21 @@ export const useStore = create(
         });
       },
       logout: () => set({ currentUser: null, activeScreen: 'dashboard' }),
+      hasUserPin: (userId) => {
+        const entry = get().userPinHashes?.[userId];
+        return !!(entry && entry.hash && entry.salt);
+      },
+      setUserPin: async (userId, pin) => {
+        const entry = await hashSecret(pin);
+        set((state) => ({
+          userPinHashes: { ...state.userPinHashes, [userId]: entry }
+        }));
+      },
+      verifyUserPin: async (userId, pin) => {
+        const entry = get().userPinHashes?.[userId];
+        if (!entry) return false;
+        return verifySecret(pin, entry);
+      },
       toggleTheme: () => {
         const { theme, currentUser, userThemes } = get();
         const newTheme = theme === 'light' ? 'dark' : 'light';
@@ -166,6 +183,16 @@ export const useStore = create(
         return { data: newData };
       }),
 
+      updateTransaction: (id, updates) => set((state) => {
+        const newData = {
+          ...state.data,
+          transactions: state.data.transactions.map(t =>
+            t.id === id ? { ...t, ...updates, id: t.id, userId: t.userId } : t
+          )
+        };
+        return { data: newData };
+      }),
+
       deleteTransaction: (id) => set((state) => {
         const newData = {
           ...state.data,
@@ -250,8 +277,9 @@ export const useStore = create(
       syncWithSupabase: async () => {
         const state = get();
         if (!state.currentUser) return;
+        if (!supabase) return; // Cloud sync disabled (env not configured)
         set({ isSyncing: true });
-        
+
         try {
           const { data: dbData, error } = await supabase
             .from('user_data')
@@ -310,13 +338,15 @@ export const useStore = create(
     {
       name: 'money-planner-storage',
       storage: createJSONStorage(() => localStorage),
-      partialize: (state) => ({ 
-          data: state.data, 
-          currentUser: state.currentUser, 
+      // currentUser is intentionally not persisted: auth must be re-established
+      // on every reload, matching the idle-timeout security model in App.jsx.
+      partialize: (state) => ({
+          data: state.data,
           currency: state.currency,
           theme: state.theme,
           userThemes: state.userThemes,
-          userBiometrics: state.userBiometrics
+          userBiometrics: state.userBiometrics,
+          userPinHashes: state.userPinHashes
       })
     }
   )

@@ -30,6 +30,9 @@ jobs:
       run: npm run lint
       continue-on-error: true # Don't block build if there are lint warnings
 
+    - name: 🧪 Test
+      run: npm test
+
     - name: 🔨 Build
       run: npm run build
 

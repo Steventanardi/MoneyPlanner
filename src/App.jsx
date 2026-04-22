@@ -52,42 +52,51 @@ const App = () => {
     }, []);
 
     useEffect(() => {
-        const { fetchExchangeRate, setLastActive, logout, currentUser } = useStore.getState();
-        
-        // --- Security Timeout ---
+        const { fetchExchangeRate } = useStore.getState();
+
+        const IDLE_TIMEOUT_MS = 60 * 1000;
+        const IDLE_CHECK_INTERVAL_MS = 30 * 1000;
+        const ACTIVITY_THROTTLE_MS = 5 * 1000;
+        const RATE_REFRESH_MS = 10 * 60 * 1000;
+
+        let lastActivityWrite = 0;
+
         const checkTimeout = () => {
-             const state = useStore.getState();
-             if (state.currentUser && (Date.now() - state.lastActive > 1 * 60 * 1000)) {
-                 logout();
-             }
+            const state = useStore.getState();
+            if (state.currentUser && Date.now() - state.lastActive > IDLE_TIMEOUT_MS) {
+                state.logout();
+            }
         };
 
         const onUserActivity = () => {
-             if (!document.hidden) {
-                  checkTimeout();
-             }
-             setLastActive();
+            if (document.hidden) return;
+            const now = Date.now();
+            if (now - lastActivityWrite < ACTIVITY_THROTTLE_MS) return;
+            lastActivityWrite = now;
+            useStore.getState().setLastActive();
         };
 
-        // Live Rate Pulse
-        fetchExchangeRate();
-        const rateInterval = setInterval(fetchExchangeRate, 600000); // 10m update
+        const onVisibilityChange = () => {
+            if (!document.hidden) checkTimeout();
+        };
 
-        // Activity Listeners
-        window.addEventListener('visibilitychange', onUserActivity);
+        fetchExchangeRate();
+        const rateInterval = setInterval(fetchExchangeRate, RATE_REFRESH_MS);
+
+        document.addEventListener('visibilitychange', onVisibilityChange);
         window.addEventListener('mousedown', onUserActivity);
         window.addEventListener('keydown', onUserActivity);
         window.addEventListener('touchstart', onUserActivity);
 
-        const timeoutCheckInterval = setInterval(checkTimeout, 30000); // Check every 30s
+        const timeoutCheckInterval = setInterval(checkTimeout, IDLE_CHECK_INTERVAL_MS);
 
         return () => {
-             clearInterval(rateInterval);
-             clearInterval(timeoutCheckInterval);
-             window.removeEventListener('visibilitychange', onUserActivity);
-             window.removeEventListener('mousedown', onUserActivity);
-             window.removeEventListener('keydown', onUserActivity);
-             window.removeEventListener('touchstart', onUserActivity);
+            clearInterval(rateInterval);
+            clearInterval(timeoutCheckInterval);
+            document.removeEventListener('visibilitychange', onVisibilityChange);
+            window.removeEventListener('mousedown', onUserActivity);
+            window.removeEventListener('keydown', onUserActivity);
+            window.removeEventListener('touchstart', onUserActivity);
         };
     }, []);
 
