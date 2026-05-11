@@ -1,14 +1,30 @@
-import React, { useState } from 'react';
-import { useStore, USERS } from '../store/useStore';
+import React, { useState, useEffect } from 'react';
+import { useStore, USERS, hashPin } from '../store/useStore';
+import { MAX_PIN_ATTEMPTS, PIN_LOCKOUT_SECONDS } from '../constants';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Users, User, ArrowRight, ShieldCheck, Coins, ChevronLeft, Delete, ScanFace, CheckCircle2 } from 'lucide-react';
 
 const Login = () => {
-    const { setCurrentUser, userBiometrics } = useStore();
+    const { setCurrentUser, userBiometrics, pinAttempts, pinLockoutUntil, recordPinFailure, resetPinAttempts } = useStore();
     const [selectedUser, setSelectedUser] = useState(null);
     const [pin, setPin] = useState('');
     const [error, setError] = useState(false);
     const [status, setStatus] = useState('idle'); // 'idle', 'loading', 'scanning', 'success', 'failed'
+    const [lockoutRemaining, setLockoutRemaining] = useState(0);
+
+    useEffect(() => {
+        if (!selectedUser) return;
+        const lockoutUntil = pinLockoutUntil[selectedUser.id] || 0;
+        const remaining = Math.ceil((lockoutUntil - Date.now()) / 1000);
+        if (remaining <= 0) { setLockoutRemaining(0); return; }
+        setLockoutRemaining(remaining);
+        const interval = setInterval(() => {
+            const r = Math.ceil((pinLockoutUntil[selectedUser.id] - Date.now()) / 1000);
+            if (r <= 0) { setLockoutRemaining(0); clearInterval(interval); }
+            else setLockoutRemaining(r);
+        }, 1000);
+        return () => clearInterval(interval);
+    }, [selectedUser, pinLockoutUntil]);
 
     const handleUserSelect = (user) => {
         setSelectedUser(user);
@@ -17,6 +33,7 @@ const Login = () => {
     };
 
     const handlePinPress = (val) => {
+        if (lockoutRemaining > 0) return;
         if (pin.length < 4) {
             const newPin = pin + val;
             setPin(newPin);
@@ -31,10 +48,13 @@ const Login = () => {
         setError(false);
     };
 
-    const validatePin = (inputPin) => {
-        if (inputPin === selectedUser.pin) {
+    const validatePin = async (inputPin) => {
+        const inputHash = await hashPin(inputPin);
+        if (inputHash === selectedUser.pinHash) {
+            resetPinAttempts(selectedUser.id);
             handleLoginSuccess();
         } else {
+            recordPinFailure(selectedUser.id);
             setError(true);
             setTimeout(() => {
                 setPin('');
@@ -157,6 +177,22 @@ const Login = () => {
                             <h2 style={{ fontSize: '24px', fontWeight: '900', marginBottom: '8px' }}>Enter Passcode</h2>
                             <p style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>Identify yourself, {selectedUser.name}</p>
                         </div>
+
+                        {/* Lockout Banner */}
+                        {lockoutRemaining > 0 && (
+                            <div style={{
+                                background: 'rgba(255,59,48,0.12)', border: '1px solid rgba(255,59,48,0.3)',
+                                borderRadius: '16px', padding: '12px 16px', marginBottom: '20px',
+                                fontSize: '13px', fontWeight: '700', color: 'var(--accent-danger)'
+                            }}>
+                                Too many attempts. Try again in {lockoutRemaining}s
+                            </div>
+                        )}
+                        {!lockoutRemaining && (pinAttempts[selectedUser?.id] || 0) > 0 && (
+                            <div style={{ fontSize: '12px', color: 'var(--accent-danger)', fontWeight: '700', marginBottom: '16px' }}>
+                                {MAX_PIN_ATTEMPTS - (pinAttempts[selectedUser.id] || 0)} attempt{MAX_PIN_ATTEMPTS - (pinAttempts[selectedUser.id] || 0) !== 1 ? 's' : ''} remaining
+                            </div>
+                        )}
 
                         {/* PIN Dots */}
                         <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', marginBottom: '60px' }}>

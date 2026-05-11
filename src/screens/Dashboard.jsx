@@ -24,18 +24,19 @@ import TransactionForm from '../components/TransactionForm';
 import Settings from '../components/Settings';
 
 const Dashboard = () => {
-    const { 
-        data, 
-        formatCurrency, 
-        currentUser, 
-        selectedMonth, 
-        setActiveScreen, 
-        isAddingTransaction, 
-        setIsAddingTransaction, 
-        isSettingsOpen, 
+    const {
+        data,
+        formatCurrency,
+        currentUser,
+        selectedMonth,
+        setActiveScreen,
+        isAddingTransaction,
+        setIsAddingTransaction,
+        isSettingsOpen,
         setIsSettingsOpen,
         exchangeRate,
-        updateEmergencyFund
+        updateEmergencyFund,
+        getBudgetAlerts
     } = useStore();
     const emergencyFund = data.emergencyFund || 20000;
     const [statModal, setStatModal] = React.useState(null);
@@ -103,6 +104,36 @@ const Dashboard = () => {
             .slice(0, 5);
     }, [activeMonthTransactions]);
 
+    const budgetAlerts = useMemo(() => getBudgetAlerts(), [data.transactions, data.budgets, selectedMonth, currentUser]);
+
+    const prevMonth = useMemo(() => {
+        const [year, month] = selectedMonth.split('-').map(Number);
+        const d = new Date(year, month - 2);
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    }, [selectedMonth]);
+
+    const prevMonthExpense = useMemo(() =>
+        userTransactions
+            .filter(t => t.date && t.date.startsWith(prevMonth) && t.type === 'expense')
+            .reduce((sum, t) => sum + t.amount, 0),
+    [userTransactions, prevMonth]);
+
+    const expenseDelta = prevMonthExpense > 0 ? ((expense - prevMonthExpense) / prevMonthExpense) * 100 : null;
+
+    const budgetHealth = useMemo(() => {
+        const userBudgets = (data.budgets || []).filter(
+            b => b.userId === currentUser?.id && b.month === selectedMonth && b.limit > 0
+        );
+        if (!userBudgets.length) return null;
+        const onTrack = userBudgets.filter(b => {
+            const spent = activeMonthTransactions
+                .filter(t => t.type === 'expense' && t.category === b.category)
+                .reduce((sum, t) => sum + t.amount, 0);
+            return spent < b.limit;
+        }).length;
+        return { total: userBudgets.length, onTrack };
+    }, [data.budgets, activeMonthTransactions, currentUser, selectedMonth]);
+
     return (
         <div style={{ paddingBottom: '140px', paddingTop: 'calc(env(safe-area-inset-top, 40px) + 20px)' }}>
             <header style={{ padding: '24px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -138,6 +169,40 @@ const Dashboard = () => {
                     <Clock size={22} color="var(--text-secondary)" />
                 </button>
             </header>
+
+            {/* Budget Alerts */}
+            {budgetAlerts.length > 0 && (
+                <div style={{ padding: '0 20px 16px' }}>
+                    {budgetAlerts.map(alert => (
+                        <motion.div
+                            key={alert.category}
+                            initial={{ opacity: 0, y: -8 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            onClick={() => setActiveScreen('monthly')}
+                            style={{
+                                background: alert.pct >= 1
+                                    ? 'rgba(255,59,48,0.12)'
+                                    : 'rgba(255,149,0,0.12)',
+                                border: `1px solid ${alert.pct >= 1 ? 'rgba(255,59,48,0.3)' : 'rgba(255,149,0,0.3)'}`,
+                                borderRadius: '16px',
+                                padding: '12px 16px',
+                                marginBottom: '8px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '10px',
+                                cursor: 'pointer'
+                            }}
+                        >
+                            <AlertCircle size={16} color={alert.pct >= 1 ? 'var(--accent-danger)' : '#FF9500'} style={{ flexShrink: 0 }} />
+                            <span style={{ fontSize: '13px', fontWeight: '700', color: 'var(--text-primary)' }}>
+                                {alert.pct >= 1
+                                    ? `${alert.category} budget exceeded (${Math.round(alert.pct * 100)}%)`
+                                    : `${alert.category} at ${Math.round(alert.pct * 100)}% of budget`}
+                            </span>
+                        </motion.div>
+                    ))}
+                </div>
+            )}
 
             <div style={{ padding: '0 20px' }}>
                 {/* Balance Card - Premium Design */}
@@ -187,6 +252,16 @@ const Dashboard = () => {
                             <h2 style={{ fontSize: '42px', fontWeight: '900', letterSpacing: '-1.5px' }}>
                                 {formatCurrency(balance)}
                             </h2>
+                            {expenseDelta !== null && expense > 0 && (
+                                <div style={{
+                                    display: 'inline-flex', alignItems: 'center', gap: '4px',
+                                    marginTop: '6px', padding: '4px 10px', borderRadius: '100px',
+                                    background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(10px)',
+                                    fontSize: '11px', fontWeight: '800', color: 'white'
+                                }}>
+                                    {expenseDelta > 0 ? '↑' : '↓'} {Math.abs(expenseDelta).toFixed(0)}% spending vs last month
+                                </div>
+                            )}
                         </div>
                         <div style={{ 
                           padding: '10px 16px', 
@@ -296,6 +371,27 @@ const Dashboard = () => {
                         </div>
                     </motion.div>
                 </div>
+
+                {/* Budget Health Strip */}
+                {budgetHealth && (
+                    <motion.div
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => setActiveScreen('monthly')}
+                        className="card glass-card"
+                        style={{ padding: '16px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', cursor: 'pointer', borderRadius: '20px' }}
+                    >
+                        <span style={{ fontWeight: '700', fontSize: '14px' }}>Budget Health</span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <span style={{
+                                fontSize: '13px', fontWeight: '800',
+                                color: budgetHealth.onTrack === budgetHealth.total ? 'var(--accent-success)' : 'var(--accent-warning)'
+                            }}>
+                                {budgetHealth.onTrack}/{budgetHealth.total} on track
+                            </span>
+                            <ChevronRight size={16} color="var(--text-secondary)" />
+                        </div>
+                    </motion.div>
+                )}
 
                 {/* Insights Section */}
                 <div className="flex-between" style={{ marginBottom: '16px' }}>

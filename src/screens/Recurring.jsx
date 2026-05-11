@@ -61,6 +61,19 @@ const Recurring = () => {
     const unpaidBills = data.bills.filter(b => !b.isPaid);
     const totalBills = unpaidBills.reduce((acc, b) => acc + b.amount, 0);
 
+    const today = new Date().getDate();
+    const getDaysUntilDue = (dueDate) => {
+        const diff = dueDate - today;
+        return diff < 0 ? diff + 31 : diff;
+    };
+    const getBillUrgencyColor = (bill) => {
+        if (bill.isPaid) return null;
+        const days = getDaysUntilDue(bill.dueDate);
+        if (days <= 1) return 'var(--accent-danger)';
+        if (days <= 3) return '#FF9500';
+        return null;
+    };
+
     const getIcon = (iconName) => {
         switch (iconName) {
             case 'Music': return <Music size={20} />;
@@ -173,18 +186,22 @@ const Recurring = () => {
                             </div>
 
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                                {data.bills.map(bill => (
-                                    <div 
-                                        key={bill.id} 
-                                        className="card" 
-                                        style={{ 
-                                            padding: '16px 20px', 
-                                            borderRadius: '24px', 
-                                            display: 'flex', 
-                                            justifyContent: 'space-between', 
-                                            alignItems: 'center', 
-                                            border: '1px solid var(--glass-border)',
-                                            opacity: bill.isPaid ? 0.6 : 1
+                                {data.bills.map(bill => {
+                                    const urgencyColor = getBillUrgencyColor(bill);
+                                    const daysUntil = getDaysUntilDue(bill.dueDate);
+                                    return (
+                                    <div
+                                        key={bill.id}
+                                        className="card"
+                                        style={{
+                                            padding: '16px 20px',
+                                            borderRadius: '24px',
+                                            display: 'flex',
+                                            justifyContent: 'space-between',
+                                            alignItems: 'center',
+                                            border: urgencyColor ? `1.5px solid ${urgencyColor}` : '1px solid var(--glass-border)',
+                                            opacity: bill.isPaid ? 0.6 : 1,
+                                            background: urgencyColor ? `${urgencyColor}08` : undefined
                                         }}
                                     >
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flex: 1 }}>
@@ -196,7 +213,9 @@ const Recurring = () => {
                                             </button>
                                             <div>
                                                 <div style={{ fontWeight: '800', fontSize: '16px', color: 'var(--text-primary)', textDecoration: bill.isPaid ? 'line-through' : 'none' }}>{bill.name}</div>
-                                                <div style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: '600' }}>Due Date: {bill.dueDate}th</div>
+                                                <div style={{ fontSize: '11px', fontWeight: '600', color: urgencyColor || 'var(--text-secondary)' }}>
+                                                    {bill.isPaid ? 'Paid' : daysUntil === 0 ? 'Due today!' : daysUntil === 1 ? 'Due tomorrow' : `Due in ${daysUntil} days`}
+                                                </div>
                                             </div>
                                         </div>
                                         <div style={{ textAlign: 'right', display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -215,7 +234,8 @@ const Recurring = () => {
                                             </button>
                                         </div>
                                     </div>
-                                ))}
+                                    );
+                                })}
                             </div>
                         </motion.div>
                     )}

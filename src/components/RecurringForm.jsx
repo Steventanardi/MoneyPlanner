@@ -15,7 +15,8 @@ import {
 import { motion } from 'framer-motion';
 
 const RecurringForm = ({ type, onComplete }) => {
-    const { addSubscription, addBill, currentUser } = useStore();
+    const { addSubscription, addBill, currentUser, pushToSupabase } = useStore();
+    const [formError, setFormError] = useState('');
     const [formData, setFormData] = useState({
         name: '',
         amount: '',
@@ -29,12 +30,21 @@ const RecurringForm = ({ type, onComplete }) => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        if (!formData.name || !formData.amount) return;
+        if (!formData.name?.trim()) {
+            setFormError('Name is required');
+            return;
+        }
+        const parsedAmount = parseFloat(formData.amount);
+        if (!formData.amount || isNaN(parsedAmount) || parsedAmount <= 0) {
+            setFormError('Enter a valid amount greater than 0');
+            return;
+        }
+        setFormError('');
 
         if (type === 'subscriptions') {
             addSubscription({
                 name: formData.name,
-                amount: parseFloat(formData.amount),
+                amount: parsedAmount,
                 category: formData.category,
                 frequency: formData.frequency,
                 icon: formData.icon
@@ -42,11 +52,12 @@ const RecurringForm = ({ type, onComplete }) => {
         } else {
             addBill({
                 name: formData.name,
-                amount: parseFloat(formData.amount),
+                amount: parsedAmount,
                 category: formData.category,
                 dueDate: parseInt(formData.dueDate),
             });
         }
+        pushToSupabase();
         onComplete();
     };
 
@@ -151,6 +162,12 @@ const RecurringForm = ({ type, onComplete }) => {
                         required
                         style={{ height: '52px', borderRadius: '14px' }}
                     />
+                </div>
+            )}
+
+            {formError && (
+                <div style={{ color: 'var(--accent-danger)', fontSize: '13px', fontWeight: '700', textAlign: 'center' }}>
+                    {formError}
                 </div>
             )}
 

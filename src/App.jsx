@@ -1,6 +1,8 @@
 import React, { useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useStore } from './store/useStore';
+import ErrorBoundary from './components/ErrorBoundary';
+import { SESSION_TIMEOUT_MS, RATE_FETCH_INTERVAL_MS, TIMEOUT_CHECK_INTERVAL_MS } from './constants';
 
 // Screens
 import Navigation from './components/Navigation';
@@ -13,17 +15,19 @@ import Login from './screens/Login';
 
 
 const App = () => {
-    const { 
-        activeScreen, 
-        currentUser, 
-        theme, 
-        syncWithSupabase, 
-        isSyncing 
+    const {
+        activeScreen,
+        currentUser,
+        theme,
+        syncWithSupabase,
+        checkAndResetBills,
+        isSyncing
     } = useStore();
 
     useEffect(() => {
         if (currentUser) {
             syncWithSupabase();
+            checkAndResetBills();
         }
     }, [currentUser]);
 
@@ -57,7 +61,7 @@ const App = () => {
         // --- Security Timeout ---
         const checkTimeout = () => {
              const state = useStore.getState();
-             if (state.currentUser && (Date.now() - state.lastActive > 1 * 60 * 1000)) {
+             if (state.currentUser && (Date.now() - state.lastActive > SESSION_TIMEOUT_MS)) {
                  logout();
              }
         };
@@ -71,7 +75,7 @@ const App = () => {
 
         // Live Rate Pulse
         fetchExchangeRate();
-        const rateInterval = setInterval(fetchExchangeRate, 600000); // 10m update
+        const rateInterval = setInterval(fetchExchangeRate, RATE_FETCH_INTERVAL_MS);
 
         // Activity Listeners
         window.addEventListener('visibilitychange', onUserActivity);
@@ -79,7 +83,7 @@ const App = () => {
         window.addEventListener('keydown', onUserActivity);
         window.addEventListener('touchstart', onUserActivity);
 
-        const timeoutCheckInterval = setInterval(checkTimeout, 30000); // Check every 30s
+        const timeoutCheckInterval = setInterval(checkTimeout, TIMEOUT_CHECK_INTERVAL_MS);
 
         return () => {
              clearInterval(rateInterval);
@@ -111,21 +115,23 @@ const App = () => {
             <div style={{ position: 'fixed', bottom: '15%', left: '-5%', width: '250px', height: '250px', borderRadius: '50%', background: 'linear-gradient(135deg, hsla(var(--hue-danger), 100%, 50%, 0.05), transparent)', filter: 'blur(60px)', zIndex: 0, pointerEvents: 'none' }} />
 
             <main className="main-content no-scrollbar" style={{ position: 'relative' }}>
-                <AnimatePresence mode="wait">
-                    <motion.div
-                        key={activeScreen}
-                        initial={{ opacity: 0, scale: 0.98, y: 12 }}
-                        animate={{ opacity: 1, scale: 1, y: 0 }}
-                        exit={{ opacity: 0, scale: 1.02, y: -12 }}
-                        transition={{ 
-                            duration: 0.35, 
-                            ease: [0.23, 1, 0.32, 1] 
-                        }}
-                        style={{ width: '100%', height: '100%' }}
-                    >
-                        {renderScreen()}
-                    </motion.div>
-                </AnimatePresence>
+                <ErrorBoundary>
+                    <AnimatePresence mode="wait">
+                        <motion.div
+                            key={activeScreen}
+                            initial={{ opacity: 0, scale: 0.98, y: 12 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 1.02, y: -12 }}
+                            transition={{
+                                duration: 0.35,
+                                ease: [0.23, 1, 0.32, 1]
+                            }}
+                            style={{ width: '100%', height: '100%' }}
+                        >
+                            {renderScreen()}
+                        </motion.div>
+                    </AnimatePresence>
+                </ErrorBoundary>
             </main>
 
             {!isKeyboardVisible && <Navigation />}

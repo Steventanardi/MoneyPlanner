@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import useStore from '../store/useStore';
-import { 
-    Trash2, 
-    Search, 
-    Edit2, 
-    Filter, 
-    Download, 
+import {
+    Trash2,
+    Search,
+    Edit2,
+    Filter,
+    Download,
     Camera,
     Calendar,
     ArrowUpRight,
@@ -17,7 +17,75 @@ import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'rec
 import Modal from '../components/Modal';
 import TransactionForm from '../components/TransactionForm';
 import { getReceipt } from '../utils/db';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useMotionValue, animate } from 'framer-motion';
+
+const escapeCSV = (val) => `"${String(val ?? '').replace(/"/g, '""')}"`;
+
+const TransactionRow = React.memo(({ t, getBankName, deleteTransaction, setEditingTransaction, formatCurrency, idx }) => {
+    const x = useMotionValue(0);
+
+    const handleDragEnd = (_, info) => {
+        if (info.offset.x < -60) {
+            animate(x, -80, { type: 'spring', stiffness: 500, damping: 40 });
+        } else {
+            animate(x, 0, { type: 'spring', stiffness: 500, damping: 40 });
+        }
+    };
+
+    return (
+        <motion.div
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: Math.min(idx * 0.04, 0.3) }}
+            style={{ position: 'relative', borderRadius: '24px' }}
+        >
+            {/* Swipe-to-delete background */}
+            <div style={{
+                position: 'absolute', right: 0, top: 0, bottom: 0, width: '80px',
+                background: 'var(--accent-danger)', borderRadius: '0 24px 24px 0',
+                display: 'flex', alignItems: 'center', justifyContent: 'center'
+            }}>
+                <button onClick={() => deleteTransaction(t.id)} style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer', padding: '12px' }}>
+                    <Trash2 size={22} />
+                </button>
+            </div>
+
+            <motion.div
+                style={{ x }}
+                drag="x"
+                dragConstraints={{ left: -80, right: 0 }}
+                dragElastic={0.05}
+                onDragEnd={handleDragEnd}
+                onClick={() => { if (Math.abs(x.get()) < 5) setEditingTransaction(t); }}
+            >
+                <div className="card" style={{ padding: '16px 18px', borderRadius: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid var(--glass-border)', cursor: 'pointer' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flex: 1 }}>
+                        <div style={{
+                            width: '44px', height: '44px', borderRadius: '14px', flexShrink: 0,
+                            background: t.type === 'income' ? 'rgba(52,199,89,0.1)' : 'rgba(255,59,48,0.1)',
+                            color: t.type === 'income' ? 'var(--accent-success)' : 'var(--accent-danger)',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center'
+                        }}>
+                            {t.type === 'income' ? <ArrowUpRight size={20} /> : <ArrowDownLeft size={20} />}
+                        </div>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ fontWeight: '800', fontSize: '15px', color: 'var(--text-primary)' }}>{t.category}</div>
+                            <div style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: '600', marginTop: '2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                {t.description || getBankName(t.bankId)}
+                            </div>
+                        </div>
+                    </div>
+                    <div style={{ textAlign: 'right', display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
+                        <div style={{ fontWeight: '900', fontSize: '16px', color: t.type === 'income' ? 'var(--accent-success)' : 'var(--text-primary)' }}>
+                            {formatCurrency(t.amount)}
+                        </div>
+                        <ChevronRight size={18} color="var(--text-secondary)" style={{ opacity: 0.3 }} />
+                    </div>
+                </div>
+            </motion.div>
+        </motion.div>
+    );
+});
 
 const History = () => {
     const { data, formatCurrency, deleteTransaction, currentUser, syncWithSupabase } = useStore();
@@ -26,6 +94,7 @@ const History = () => {
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     const [filterType, setFilterType] = useState('all');
     const [filterBankId, setFilterBankId] = useState('all');
+    const [filterMonth, setFilterMonth] = useState('all');
     const [viewingReceiptId, setViewingReceiptId] = useState(null);
     const [receiptImageRaw, setReceiptImageRaw] = useState(null);
 
@@ -37,54 +106,67 @@ const History = () => {
         }
     }, [viewingReceiptId]);
 
-    const visibleTransactions = (data.transactions || []).filter(t => {
-        if (t.userId !== currentUser?.id) return false;
-        if (filterType !== 'all' && t.type !== filterType) return false;
-        if (filterBankId !== 'all' && t.bankId !== Number(filterBankId)) return false;
+    const availableMonths = useMemo(() => {
+        const months = new Set(
+            (data.transactions || [])
+                .filter(t => t.userId === currentUser?.id && t.date)
+                .map(t => t.date.slice(0, 7))
+        );
+        return Array.from(months).sort((a, b) => b.localeCompare(a));
+    }, [data.transactions, currentUser]);
 
-        const searchMatches = (t.category || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-            (t.description || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-            ((data.banks || []).find(b => b.id === t.bankId)?.name || '').toLowerCase().includes(searchTerm.toLowerCase());
-            
-        return searchMatches;
-    });
+    const visibleTransactions = useMemo(() =>
+        (data.transactions || []).filter(t => {
+            if (t.userId !== currentUser?.id) return false;
+            if (filterType !== 'all' && t.type !== filterType) return false;
+            if (filterBankId !== 'all' && t.bankId !== Number(filterBankId)) return false;
+            if (filterMonth !== 'all' && !(t.date || '').startsWith(filterMonth)) return false;
+            const term = searchTerm.toLowerCase();
+            return (t.category || '').toLowerCase().includes(term) ||
+                (t.description || '').toLowerCase().includes(term) ||
+                ((data.banks || []).find(b => b.id === t.bankId)?.name || '').toLowerCase().includes(term);
+        }),
+    [data.transactions, data.banks, currentUser, filterType, filterBankId, filterMonth, searchTerm]);
 
-    const groupedTransactions = visibleTransactions.reduce((acc, t) => {
-        const date = new Date(t.date).toLocaleDateString('en-US', {
-            weekday: 'short',
-            month: 'short',
-            day: 'numeric'
-        });
-        if (!acc[date]) acc[date] = [];
-        acc[date].push(t);
-        return acc;
-    }, {});
+    const groupedTransactions = useMemo(() =>
+        visibleTransactions.reduce((acc, t) => {
+            const date = new Date(t.date).toLocaleDateString('en-US', {
+                weekday: 'short',
+                month: 'short',
+                day: 'numeric'
+            });
+            if (!acc[date]) acc[date] = [];
+            acc[date].push(t);
+            return acc;
+        }, {}),
+    [visibleTransactions]);
 
-    const sortedDates = Object.keys(groupedTransactions).sort((a, b) =>
-        new Date(b) - new Date(a)
-    );
+    const sortedDates = useMemo(() =>
+        Object.keys(groupedTransactions).sort((a, b) => new Date(b) - new Date(a)),
+    [groupedTransactions]);
 
-    // Dynamic Chart Data
-    const chartData = sortedDates.slice(0, 10).reverse().map(date => {
-        const totalExpense = groupedTransactions[date]
-            .filter(t => t.type === 'expense')
-            .reduce((sum, t) => sum + t.amount, 0);
-        return { date: date.split(',')[1].trim(), amount: totalExpense };
-    });
+    const chartData = useMemo(() =>
+        sortedDates.slice(0, 10).reverse().map(date => {
+            const totalExpense = groupedTransactions[date]
+                .filter(t => t.type === 'expense')
+                .reduce((sum, t) => sum + t.amount, 0);
+            return { date: date.split(',')[1].trim(), amount: totalExpense };
+        }),
+    [sortedDates, groupedTransactions]);
 
     const getBankName = (id) => data.banks.find(b => b.id === id)?.name || 'Manual Entry';
 
     const handleExport = () => {
         const headers = ['Date', 'Category', 'Description', 'Type', 'Amount', 'Bank'];
         const csv = [
-            headers.join(','),
+            headers.map(escapeCSV).join(','),
             ...visibleTransactions.map(t => [
-                new Date(t.date).toLocaleDateString(),
-                t.category,
-                t.description || '',
-                t.type,
-                t.amount,
-                getBankName(t.bankId)
+                escapeCSV(new Date(t.date).toLocaleDateString()),
+                escapeCSV(t.category),
+                escapeCSV(t.description || ''),
+                escapeCSV(t.type),
+                escapeCSV(t.amount),
+                escapeCSV(getBankName(t.bankId))
             ].join(','))
         ].join('\n');
 
@@ -169,42 +251,15 @@ const History = () => {
                             </h3>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                                 {groupedTransactions[date].map((t, idx) => (
-                                    <motion.div
+                                    <TransactionRow
                                         key={t.id}
-                                        initial={{ opacity: 0, x: -10 }}
-                                        animate={{ opacity: 1, x: 0 }}
-                                        transition={{ delay: idx * 0.05 }}
-                                        className="card"
-                                        style={{ padding: '16px 18px', borderRadius: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid var(--glass-border)' }}
-                                    >
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flex: 1 }}>
-                                            <div style={{ 
-                                                width: '44px', height: '44px', borderRadius: '14px', 
-                                                background: t.type === 'income' ? 'rgba(52,199,89,0.1)' : 'rgba(255,59,48,0.1)',
-                                                color: t.type === 'income' ? 'var(--accent-success)' : 'var(--accent-danger)',
-                                                display: 'flex', alignItems: 'center', justifyContent: 'center'
-                                            }}>
-                                                {t.type === 'income' ? <ArrowUpRight size={20} /> : <ArrowDownLeft size={20} />}
-                                            </div>
-                                            <div style={{ flex: 1 }}>
-                                                <div style={{ fontWeight: '800', fontSize: '15px', color: 'var(--text-primary)' }}>{t.category}</div>
-                                                <div style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: '600', marginTop: '2px' }}>
-                                                    {t.description || getBankName(t.bankId)}
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div style={{ textAlign: 'right', display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                            <div style={{ fontWeight: '900', fontSize: '16px', color: t.type === 'income' ? 'var(--accent-success)' : 'var(--text-primary)' }}>
-                                                {formatCurrency(t.amount)}
-                                            </div>
-                                            <button 
-                                                onClick={() => setEditingTransaction(t)}
-                                                style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', opacity: 0.4, cursor: 'pointer' }}
-                                            >
-                                                <ChevronRight size={18} />
-                                            </button>
-                                        </div>
-                                    </motion.div>
+                                        t={t}
+                                        idx={idx}
+                                        getBankName={getBankName}
+                                        deleteTransaction={deleteTransaction}
+                                        setEditingTransaction={setEditingTransaction}
+                                        formatCurrency={formatCurrency}
+                                    />
                                 ))}
                             </div>
                         </div>
@@ -248,6 +303,17 @@ const History = () => {
 
             <Modal isOpen={isFilterOpen} onClose={() => setIsFilterOpen(false)} title="Refine Log">
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                    <div className="input-group">
+                        <label style={{ fontSize: '12px', fontWeight: '800', color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: '8px', display: 'block' }}>Month</label>
+                        <select value={filterMonth} onChange={e => setFilterMonth(e.target.value)}>
+                            <option value="all">All Time</option>
+                            {availableMonths.map(m => (
+                                <option key={m} value={m}>
+                                    {new Date(m + '-01').toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
                     <div className="input-group">
                         <label style={{ fontSize: '12px', fontWeight: '800', color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: '8px', display: 'block' }}>Type</label>
                         <select value={filterType} onChange={e => setFilterType(e.target.value)}>

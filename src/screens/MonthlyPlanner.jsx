@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo, memo } from 'react';
 import useStore from '../store/useStore';
 import MonthSelector from '../components/MonthSelector';
 import Modal from '../components/Modal';
@@ -18,6 +18,29 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { motion, AnimatePresence } from 'framer-motion';
 
 // --- Sub-components ---
+
+const SpendingBarChart = memo(({ data: categoryData }) => (
+    <div style={{ height: '300px', width: '100%' }}>
+        {categoryData.length > 0 ? (
+            <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={categoryData} layout="vertical" margin={{ left: -10, right: 20 }}>
+                    <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="var(--glass-border)" />
+                    <XAxis type="number" hide />
+                    <YAxis dataKey="name" type="category" width={80} fontSize={10} axisLine={false} tickLine={false} />
+                    <Tooltip
+                        contentStyle={{ background: 'var(--card-bg)', border: '1px solid var(--glass-border)', borderRadius: '12px', fontSize: '12px' }}
+                        cursor={{ fill: 'var(--input-bg)' }}
+                    />
+                    <Bar dataKey="value" radius={[0, 4, 4, 0]} fill="var(--accent-primary)" />
+                </BarChart>
+            </ResponsiveContainer>
+        ) : (
+            <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-secondary)', fontSize: '13px' }}>
+                No expenses logged for this period
+            </div>
+        )}
+    </div>
+));
 
 const BudgetBanner = ({ budget, spent, income, formatCurrency, onEdit, onTap }) => {
     const remaining = budget - spent;
@@ -214,30 +237,7 @@ const MonthlyPlanner = () => {
                         <p style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>Burn rate by category</p>
                     </div>
 
-                    <div style={{ height: '300px', width: '100%' }}>
-                        {categoryData.length > 0 ? (
-                            <ResponsiveContainer width="100%" height="100%">
-                                <BarChart data={categoryData} layout="vertical" margin={{ left: -10, right: 20 }}>
-                                    <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="var(--glass-border)" />
-                                    <XAxis type="number" hide />
-                                    <YAxis dataKey="name" type="category" width={80} fontSize={10} axisLine={false} tickLine={false} />
-                                    <Tooltip 
-                                        contentStyle={{ background: 'var(--card-bg)', border: '1px solid var(--glass-border)', borderRadius: '12px', fontSize: '12px' }}
-                                        cursor={{ fill: 'var(--input-bg)' }}
-                                    />
-                                    <Bar dataKey="value" radius={[0, 4, 4, 0]}>
-                                        {categoryData.map((_, index) => (
-                                            <motion.rect key={index} fill={index === 0 ? 'var(--accent-primary)' : 'var(--accent-primary-glow)'} />
-                                        ))}
-                                    </Bar>
-                                </BarChart>
-                            </ResponsiveContainer>
-                        ) : (
-                            <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-secondary)', fontSize: '13px' }}>
-                                No expenses logged for this period
-                            </div>
-                        )}
-                    </div>
+                    <SpendingBarChart data={categoryData} />
                 </div>
 
                 {/* Savings Goals Context */}

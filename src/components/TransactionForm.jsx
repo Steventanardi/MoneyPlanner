@@ -1,22 +1,25 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Camera, X, Check, Landmark, Tag, FileText, ChevronDown } from 'lucide-react';
+import { Camera, X, Check, Landmark, Tag, FileText, ChevronDown, CalendarDays } from 'lucide-react';
 import useStore from '../store/useStore';
 import { saveReceipt } from '../utils/db';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const TransactionForm = ({ onComplete, initialData }) => {
-    const { data, addTransaction, updateTransaction, currentUser, currency, exchangeRate, syncWithSupabase } = useStore();
+    const { data, addTransaction, updateTransaction, currentUser, currency, exchangeRate, pushToSupabase } = useStore();
     
     const initialExpenseCats = data.customCategories?.filter(c => c.type === 'expense').map(c => c.name) || ['Food'];
 
+    const todayStr = new Date().toISOString().split('T')[0];
     const [formData, setFormData] = useState({
         type: 'expense',
         category: (data?.customCategories || []).filter(c => c.type === 'expense')[0]?.name || 'Food',
         amount: '',
         description: '',
         bankId: (data?.banks || [])[0]?.id || '',
+        date: todayStr,
     });
     const [receiptImage, setReceiptImage] = useState(null);
+    const [formError, setFormError] = useState('');
     const fileInputRef = useRef(null);
 
     useEffect(() => {
@@ -32,6 +35,7 @@ const TransactionForm = ({ onComplete, initialData }) => {
                 amount: Math.round(displayAmount).toString(),
                 description: initialData.description || '',
                 bankId: initialData.bankId || data.banks[0]?.id || '',
+                date: initialData.date || new Date().toISOString().split('T')[0],
             });
         }
     }, [initialData, currency, exchangeRate, data.banks]);
@@ -53,10 +57,19 @@ const TransactionForm = ({ onComplete, initialData }) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!formData.amount || !formData.bankId) return;
+        const parsedAmount = parseFloat(formData.amount);
+        if (!formData.amount || isNaN(parsedAmount) || parsedAmount <= 0) {
+            setFormError('Enter a valid amount greater than 0');
+            return;
+        }
+        if (!formData.bankId) {
+            setFormError('Select an account');
+            return;
+        }
+        setFormError('');
 
         const isEditing = !!initialData;
-        const txId = isEditing ? initialData.id : Date.now();
+        const txId = isEditing ? initialData.id : crypto.randomUUID();
 
         // Convert the input amount back to TWD for storage
         const inputAmount = parseFloat(formData.amount);
@@ -80,7 +93,7 @@ const TransactionForm = ({ onComplete, initialData }) => {
             await saveReceipt(txId, receiptImage);
         }
         
-        syncWithSupabase();
+        pushToSupabase();
         onComplete();
     };
 
@@ -165,6 +178,18 @@ const TransactionForm = ({ onComplete, initialData }) => {
                     />
                 </div>
 
+                {/* Date */}
+                <div className="input-field" style={{ position: 'relative' }}>
+                    <CalendarDays size={18} style={{ position: 'absolute', left: '16px', top: '16px', color: 'var(--text-secondary)' }} />
+                    <input
+                        type="date"
+                        value={formData.date}
+                        onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                        style={{ paddingLeft: '48px' }}
+                        required
+                    />
+                </div>
+
                 {/* Category & Bank */}
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                     <div style={{ position: 'relative' }}>
@@ -221,6 +246,12 @@ const TransactionForm = ({ onComplete, initialData }) => {
                     )}
                 </AnimatePresence>
             </div>
+
+            {formError && (
+                <div style={{ color: 'var(--accent-danger)', fontSize: '13px', fontWeight: '700', textAlign: 'center', marginTop: '-8px' }}>
+                    {formError}
+                </div>
+            )}
 
             <button
                 type="submit"
