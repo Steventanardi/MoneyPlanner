@@ -7,12 +7,10 @@ import {
     ChevronRight, 
     ArrowUpRight, 
     ArrowDownLeft, 
-    Clock, 
-    Target, 
-    AlertCircle, 
-    Banknote, 
-    LucideSettings,
-    MoreHorizontal,
+    Clock,
+    Target,
+    AlertCircle,
+    Banknote,
     Sparkles,
     Shield,
     PiggyBank
@@ -21,7 +19,6 @@ import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, BarChart, 
 import { useStore } from '../store/useStore';
 import Modal from '../components/Modal';
 import TransactionForm from '../components/TransactionForm';
-import Settings from '../components/Settings';
 
 const Dashboard = () => {
     const {
@@ -32,8 +29,6 @@ const Dashboard = () => {
         setActiveScreen,
         isAddingTransaction,
         setIsAddingTransaction,
-        isSettingsOpen,
-        setIsSettingsOpen,
         exchangeRate,
         updateEmergencyFund,
         getBudgetAlerts
@@ -137,7 +132,7 @@ const Dashboard = () => {
     return (
         <div style={{ paddingBottom: '140px', paddingTop: 'calc(env(safe-area-inset-top, 40px) + 20px)' }}>
             <header style={{ padding: '24px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div onClick={() => setIsSettingsOpen(true)} style={{ display: 'flex', alignItems: 'center', gap: '14px', cursor: 'pointer' }}>
+                <div onClick={() => setActiveScreen('settings')} style={{ display: 'flex', alignItems: 'center', gap: '14px', cursor: 'pointer' }}>
                     <div style={{ 
                         width: '52px', 
                         height: '52px', 
@@ -156,9 +151,7 @@ const Dashboard = () => {
                     </div>
                     <div>
                         <h1 className="text-h1">Money Planner</h1>
-                        <p className="text-heading" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                            Hi, {currentUser?.name} <LucideSettings size={12} style={{ opacity: 0.5 }} />
-                        </p>
+                        <p className="text-heading">Hi, {currentUser?.name}</p>
                     </div>
                 </div>
                 <button 
@@ -688,9 +681,6 @@ const Dashboard = () => {
                 </div>
             </Modal>
 
-            <Modal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} title="My Profile">
-                <Settings />
-            </Modal>
         </div>
     );
 };
