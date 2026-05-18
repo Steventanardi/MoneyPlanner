@@ -1,21 +1,18 @@
 import React, { useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-    TrendingUp, 
-    TrendingDown, 
-    Plus, 
-    ChevronRight, 
-    ArrowUpRight, 
-    ArrowDownLeft, 
+import {
+    TrendingUp,
+    TrendingDown,
+    Plus,
+    ChevronRight,
     Clock,
-    Target,
     AlertCircle,
     Banknote,
     Sparkles,
     Shield,
     PiggyBank
 } from 'lucide-react';
-import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, BarChart, Bar, Cell, PieChart, Pie } from 'recharts';
+import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, PieChart, Pie } from 'recharts';
 import { useStore } from '../store/useStore';
 import Modal from '../components/Modal';
 import TransactionForm from '../components/TransactionForm';

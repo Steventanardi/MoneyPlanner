@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { createWorker } from 'tesseract.js';
-import { Camera, X, RefreshCw, Loader2, Check } from 'lucide-react';
+import { Camera, RefreshCw, Loader2 } from 'lucide-react';
 
 const ReceiptScanner = ({ onScanComplete, onCancel }) => {
     const [isScanning, setIsScanning] = useState(false);
@@ -73,7 +73,10 @@ const ReceiptScanner = ({ onScanComplete, onCancel }) => {
                 // One last try with very loose regex
                 const looseNumbers = text.match(/\d{2,}/g);
                 if (looseNumbers) {
-                     extractedData.amount = Math.max(...looseNumbers.map(n => parseInt(n)).filter(n => n < 10000)).toString();
+                    const candidates = looseNumbers.map(n => parseInt(n)).filter(n => n > 0 && n < 10000);
+                    if (candidates.length > 0) {
+                        extractedData.amount = Math.max(...candidates).toString();
+                    }
                 }
             }
 
