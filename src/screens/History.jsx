@@ -6,17 +6,14 @@ import {
     Edit2,
     Filter,
     Download,
-    Camera,
     Calendar,
     ArrowUpRight,
     ArrowDownLeft,
     ChevronRight,
-    X
 } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import Modal from '../components/Modal';
 import TransactionForm from '../components/TransactionForm';
-import { getReceipt } from '../utils/db';
 import { motion, AnimatePresence, useMotionValue, animate } from 'framer-motion';
 
 const escapeCSV = (val) => `"${String(val ?? '').replace(/"/g, '""')}"`;
@@ -95,17 +92,6 @@ const History = () => {
     const [filterType, setFilterType] = useState('all');
     const [filterBankId, setFilterBankId] = useState('all');
     const [filterMonth, setFilterMonth] = useState('all');
-    const [viewingReceiptId, setViewingReceiptId] = useState(null);
-    const [receiptImageRaw, setReceiptImageRaw] = useState(null);
-
-    useEffect(() => {
-        if (viewingReceiptId) {
-            getReceipt(viewingReceiptId).then(img => setReceiptImageRaw(img)).catch(console.error);
-        } else {
-            setReceiptImageRaw(null);
-        }
-    }, [viewingReceiptId]);
-
     const availableMonths = useMemo(() => {
         const months = new Set(
             (data.transactions || [])
@@ -119,7 +105,7 @@ const History = () => {
         (data.transactions || []).filter(t => {
             if (t.userId !== currentUser?.id) return false;
             if (filterType !== 'all' && t.type !== filterType) return false;
-            if (filterBankId !== 'all' && t.bankId !== Number(filterBankId)) return false;
+            if (filterBankId !== 'all' && String(t.bankId) !== filterBankId) return false;
             if (filterMonth !== 'all' && !(t.date || '').startsWith(filterMonth)) return false;
             const term = searchTerm.toLowerCase();
             return (t.category || '').toLowerCase().includes(term) ||

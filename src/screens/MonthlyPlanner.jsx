@@ -4,15 +4,14 @@ import MonthSelector from '../components/MonthSelector';
 import Modal from '../components/Modal';
 import TransactionForm from '../components/TransactionForm';
 import { 
-    TrendingUp, 
-    TrendingDown, 
-    ShieldCheck as EmergencyIcon, 
+    TrendingUp,
+    TrendingDown,
+    ShieldCheck as EmergencyIcon,
     PiggyBank as SavingsIcon,
     Plus,
     ChevronRight,
     Edit2,
-    Trash2,
-    Target
+    Trash2
 } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -159,7 +158,7 @@ const MonthlyPlanner = () => {
         }, [])
         .sort((a, b) => b.value - a.value);
 
-    const emergencyFundBanks = (data.banks || []).filter(b => b.id === 3 || b.name.toLowerCase().includes('emergency'));
+    const emergencyFundBanks = (data.banks || []).filter(b => b.name.toLowerCase().includes('emergency'));
     const emergencyFund = emergencyFundBanks.reduce((acc, b) => acc + b.value, 0) || (data.banks?.[0]?.value || 0);
     const savingsGoals = (data.savingsGoals || []);
 

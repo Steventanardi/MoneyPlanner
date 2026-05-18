@@ -297,7 +297,7 @@ export const useStore = create(
               category: bill.category || 'Bill',
               amount: bill.amount,
               description: `Paid: ${bill.name}`,
-              bankId: Number(bankId),
+              bankId,
               userId: state.currentUser.id,
               date: new Date().toISOString().split('T')[0]
           };
@@ -306,7 +306,7 @@ export const useStore = create(
               ...state.data,
               bills: state.data.bills.map(b => b.id === billId ? { ...b, isPaid: true } : b),
               transactions: [newTxn, ...state.data.transactions],
-              banks: state.data.banks.map(b => b.id === Number(bankId) ? { ...b, value: b.value - bill.amount } : b)
+              banks: state.data.banks.map(b => b.id === bankId ? { ...b, value: b.value - bill.amount } : b)
           };
 
           return { data: newData };
