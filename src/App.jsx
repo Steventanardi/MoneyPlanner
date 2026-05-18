@@ -15,6 +15,7 @@ import Recurring from './screens/Recurring';
 import History from './screens/History';
 import Inventory from './screens/Inventory';
 import Login from './screens/Login';
+import Settings from './screens/Settings';
 
 
 const App = () => {
@@ -122,6 +123,7 @@ const App = () => {
             case 'history': return <History />;
             case 'recurring': return <Recurring />;
             case 'inventory': return <Inventory />;
+            case 'settings': return <Settings />;
             default: return <Dashboard />;
         }
     };

@@ -28,6 +28,7 @@ const Inventory = () => {
   const { data, currentUser, addInventoryItem, updateInventoryItem, deleteInventoryItem, formatCurrency } = useStore();
   const { isDesktop } = useResponsive();
   const [filter, setFilter]         = useState('all');
+  const [sort, setSort]             = useState('expiry');
   const [showModal, setShowModal]   = useState(false);
   const [editItem, setEditItem]     = useState(null);
   const [form, setForm]             = useState(EMPTY_FORM);
@@ -53,13 +54,17 @@ const Inventory = () => {
       : [...items];
 
     return list.sort((a, b) => {
+      if (sort === 'name') return a.name.localeCompare(b.name);
+      if (sort === 'value') return Number(b.buyPrice || 0) - Number(a.buyPrice || 0);
+      if (sort === 'newest') return new Date(b.buyDate || 0) - new Date(a.buyDate || 0);
+      // default: expiry (soonest first, no-expiry at end)
       const ai = getExpiryInfo(a.expiryDate), bi = getExpiryInfo(b.expiryDate);
       if (ai.daysLeft === null && bi.daysLeft === null) return 0;
       if (ai.daysLeft === null) return 1;
       if (bi.daysLeft === null) return -1;
       return ai.daysLeft - bi.daysLeft;
     });
-  }, [items, filter]);
+  }, [items, filter, sort]);
 
   const openAdd = () => {
     setEditItem(null);
@@ -156,11 +161,11 @@ const Inventory = () => {
       </div>
 
       {/* Filter Tabs */}
-      <div style={{ display: 'flex', gap: '8px', marginBottom: '18px', overflowX: 'auto', paddingBottom: '2px' }}>
+      <div style={{ display: 'flex', gap: '8px', marginBottom: '10px', overflowX: 'auto', paddingBottom: '2px' }}>
         {[
           { id: 'all', label: 'All Items' },
-          { id: 'expiring', label: `Expiring Soon` },
-          { id: 'expired', label: `Expired` },
+          { id: 'expiring', label: 'Expiring Soon' },
+          { id: 'expired', label: 'Expired' },
         ].map(tab => (
           <motion.button
             key={tab.id}
@@ -177,6 +182,33 @@ const Inventory = () => {
           >
             {tab.label}
           </motion.button>
+        ))}
+      </div>
+
+      {/* Sort Row */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '18px' }}>
+        <span style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.4px', flexShrink: 0 }}>
+          Sort:
+        </span>
+        {[
+          { id: 'expiry', label: 'Expiry' },
+          { id: 'name',   label: 'Name' },
+          { id: 'value',  label: 'Value' },
+          { id: 'newest', label: 'Newest' },
+        ].map(s => (
+          <button
+            key={s.id}
+            onClick={() => setSort(s.id)}
+            style={{
+              padding: '6px 12px', borderRadius: '9px', border: 'none', cursor: 'pointer',
+              fontSize: '11px', fontWeight: '700', whiteSpace: 'nowrap',
+              background: sort === s.id ? 'var(--text-primary)' : 'var(--input-bg)',
+              color: sort === s.id ? 'var(--card-bg)' : 'var(--text-secondary)',
+              transition: 'all 0.15s ease'
+            }}
+          >
+            {s.label}
+          </button>
         ))}
       </div>
 

@@ -61,11 +61,21 @@ const Recurring = () => {
     const unpaidBills = data.bills.filter(b => !b.isPaid);
     const totalBills = unpaidBills.reduce((acc, b) => acc + b.amount, 0);
 
-    const today = new Date().getDate();
-    const getDaysUntilDue = (dueDate) => {
-        const diff = dueDate - today;
-        return diff < 0 ? diff + 31 : diff;
+    const getDaysUntilDue = (dueDay) => {
+        const now = new Date();
+        now.setHours(0, 0, 0, 0);
+        const thisMonthDue = new Date(now.getFullYear(), now.getMonth(), dueDay);
+        const target = thisMonthDue >= now
+            ? thisMonthDue
+            : new Date(now.getFullYear(), now.getMonth() + 1, dueDay);
+        return Math.round((target - now) / (1000 * 60 * 60 * 24));
     };
+    const daysUntilMonthEnd = (() => {
+        const now = new Date();
+        const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+        endOfMonth.setHours(23, 59, 59, 0);
+        return Math.ceil((endOfMonth - now) / (1000 * 60 * 60 * 24));
+    })();
     const getBillUrgencyColor = (bill) => {
         if (bill.isPaid) return null;
         const days = getDaysUntilDue(bill.dueDate);
@@ -144,7 +154,7 @@ const Recurring = () => {
                                 <div style={{ fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', opacity: 0.8, letterSpacing: '1px' }}>Monthly Committed</div>
                                 <div style={{ fontSize: '32px', fontWeight: '900', marginTop: '4px' }}>{formatCurrency(totalSubs)}</div>
                                 <div style={{ fontSize: '12px', marginTop: '12px', display: 'flex', alignItems: 'center', gap: '6px', opacity: 0.9 }}>
-                                    <Bell size={14} /> Next cycle starts in 8 days
+                                    <Bell size={14} /> Next cycle starts in {daysUntilMonthEnd} day{daysUntilMonthEnd !== 1 ? 's' : ''}
                                 </div>
                             </div>
 

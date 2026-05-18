@@ -1,18 +1,19 @@
 import React from 'react';
-import { Home, Calendar, Package, Wallet, CreditCard, Coins } from 'lucide-react';
+import { Home, Calendar, Package, Wallet, CreditCard, Coins, Settings as SettingsIcon, Sun, Moon } from 'lucide-react';
 import { useStore } from '../store/useStore';
 import useResponsive from '../hooks/useResponsive';
 
 const NAV_ITEMS = [
-  { id: 'dashboard', label: 'Home',    icon: Home       },
-  { id: 'monthly',   label: 'Planner', icon: Calendar   },
-  { id: 'recurring', label: 'Bills',   icon: CreditCard },
-  { id: 'inventory', label: 'Stock',   icon: Package    },
-  { id: 'banks',     label: 'Vault',   icon: Wallet     },
+  { id: 'dashboard', label: 'Home',     icon: Home         },
+  { id: 'monthly',   label: 'Planner',  icon: Calendar     },
+  { id: 'recurring', label: 'Bills',    icon: CreditCard   },
+  { id: 'inventory', label: 'Stock',    icon: Package      },
+  { id: 'banks',     label: 'Vault',    icon: Wallet       },
+  { id: 'settings',  label: 'Settings', icon: SettingsIcon },
 ];
 
 /* ── Desktop sidebar ─────────────────────────────────────── */
-const Sidebar = ({ activeScreen, setActiveScreen, currentUser }) => {
+const Sidebar = ({ activeScreen, setActiveScreen, currentUser, theme, toggleTheme }) => {
   const accent = currentUser?.color || 'var(--accent-primary)';
 
   return (
@@ -75,28 +76,41 @@ const Sidebar = ({ activeScreen, setActiveScreen, currentUser }) => {
         })}
       </div>
 
-      {/* User chip */}
-      <div style={{
-        display: 'flex', alignItems: 'center', gap: '10px',
-        padding: '11px 12px', borderRadius: '9px',
-        border: '1px solid var(--glass-border)',
-      }}>
+      {/* User chip + theme toggle */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
         <div style={{
-          width: '30px', height: '30px', borderRadius: '8px', flexShrink: 0,
-          background: `${accent}15`, color: accent,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontWeight: '800', fontSize: '13px'
+          flex: 1, display: 'flex', alignItems: 'center', gap: '10px',
+          padding: '11px 12px', borderRadius: '9px',
+          border: '1px solid var(--glass-border)',
         }}>
-          {currentUser?.avatar || 'S'}
-        </div>
-        <div style={{ minWidth: 0 }}>
-          <div style={{ fontWeight: '700', fontSize: '13px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-            {currentUser?.name}
+          <div style={{
+            width: '30px', height: '30px', borderRadius: '8px', flexShrink: 0,
+            background: `${accent}15`, color: accent,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontWeight: '800', fontSize: '13px'
+          }}>
+            {currentUser?.avatar || 'S'}
           </div>
-          <div style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: '500' }}>
-            {currentUser?.role}
+          <div style={{ minWidth: 0 }}>
+            <div style={{ fontWeight: '700', fontSize: '13px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {currentUser?.name}
+            </div>
+            <div style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: '500' }}>
+              {currentUser?.role}
+            </div>
           </div>
         </div>
+        <button
+          onClick={toggleTheme}
+          style={{
+            width: '38px', height: '38px', borderRadius: '9px', flexShrink: 0,
+            background: 'var(--input-bg)', border: '1px solid var(--glass-border)',
+            cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+            color: 'var(--text-secondary)', transition: 'background 0.15s ease'
+          }}
+        >
+          {theme === 'dark' ? <Sun size={15} /> : <Moon size={15} />}
+        </button>
       </div>
     </nav>
   );
@@ -148,11 +162,11 @@ const BottomNav = ({ activeScreen, setActiveScreen, currentUser }) => {
 
 /* ── Export ──────────────────────────────────────────────── */
 const Navigation = () => {
-  const { activeScreen, setActiveScreen, currentUser } = useStore();
+  const { activeScreen, setActiveScreen, currentUser, theme, toggleTheme } = useStore();
   const { isDesktop } = useResponsive();
 
   return isDesktop
-    ? <Sidebar activeScreen={activeScreen} setActiveScreen={setActiveScreen} currentUser={currentUser} />
+    ? <Sidebar activeScreen={activeScreen} setActiveScreen={setActiveScreen} currentUser={currentUser} theme={theme} toggleTheme={toggleTheme} />
     : <BottomNav activeScreen={activeScreen} setActiveScreen={setActiveScreen} currentUser={currentUser} />;
 };
 
