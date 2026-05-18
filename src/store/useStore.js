@@ -259,6 +259,23 @@ export const useStore = create(
           return { data: newData };
       }),
 
+      updateRecurring: (type, id, updates) => set((state) => {
+          const newData = { ...state.data, [type]: state.data[type].map(item => item.id === id ? { ...item, ...updates } : item) };
+          return { data: newData };
+      }),
+
+      // --- Savings Goal Actions ---
+      addSavingsGoal: (goal) => set((state) => {
+          const newGoal = { ...goal, id: crypto.randomUUID(), userId: state.currentUser.id };
+          return { data: { ...state.data, savingsGoals: [...(state.data.savingsGoals || []), newGoal] } };
+      }),
+      updateSavingsGoal: (id, updates) => set((state) => ({
+          data: { ...state.data, savingsGoals: (state.data.savingsGoals || []).map(g => g.id === id ? { ...g, ...updates } : g) }
+      })),
+      deleteSavingsGoal: (id) => set((state) => ({
+          data: { ...state.data, savingsGoals: (state.data.savingsGoals || []).filter(g => g.id !== id) }
+      })),
+
       // --- Inventory Actions ---
       addInventoryItem: (item) => set((state) => {
         const newItem = {

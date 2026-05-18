@@ -140,11 +140,56 @@ const StatCard = ({ label, value, icon: Icon, color, onClick, badge }) => (
     </motion.div>
 );
 
+const GoalForm = ({ initialData, onComplete }) => {
+    const { addSavingsGoal, updateSavingsGoal } = useStore();
+    const isEdit = !!initialData;
+    const [form, setForm] = React.useState({
+        name: initialData?.name || '',
+        target: initialData?.target || '',
+        saved: initialData?.saved || '',
+        color: initialData?.color || '#007AFF',
+    });
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        const payload = { name: form.name, target: Number(form.target), saved: Number(form.saved), color: form.color };
+        if (isEdit) updateSavingsGoal(initialData.id, payload);
+        else addSavingsGoal(payload);
+        onComplete();
+    };
+    return (
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div>
+                <label style={{ fontSize: '13px', fontWeight: '700', marginBottom: '8px', display: 'block' }}>Goal Name</label>
+                <input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} placeholder="e.g. Emergency Car Fund" required style={{ height: '52px', borderRadius: '14px' }} />
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <div>
+                    <label style={{ fontSize: '13px', fontWeight: '700', marginBottom: '8px', display: 'block' }}>Target Amount</label>
+                    <input type="number" min="1" value={form.target} onChange={e => setForm({ ...form, target: e.target.value })} placeholder="0" required style={{ height: '52px', borderRadius: '14px' }} />
+                </div>
+                <div>
+                    <label style={{ fontSize: '13px', fontWeight: '700', marginBottom: '8px', display: 'block' }}>Saved So Far</label>
+                    <input type="number" min="0" value={form.saved} onChange={e => setForm({ ...form, saved: e.target.value })} placeholder="0" required style={{ height: '52px', borderRadius: '14px' }} />
+                </div>
+            </div>
+            <div>
+                <label style={{ fontSize: '13px', fontWeight: '700', marginBottom: '8px', display: 'block' }}>Color</label>
+                <input type="color" value={form.color} onChange={e => setForm({ ...form, color: e.target.value })} style={{ height: '52px', padding: '4px', width: '100%', borderRadius: '14px' }} />
+            </div>
+            <button type="submit" className="btn-primary" style={{ height: '56px', marginTop: '4px' }}>
+                {isEdit ? 'Save Changes' : 'Add Goal'}
+            </button>
+        </form>
+    );
+};
+
 const MonthlyPlanner = () => {
-    const { data, selectedMonth, getMonthlyTotals, formatCurrency, setMonthlyBudget, setActiveScreen, syncWithSupabase } = useStore();
+    const { data, selectedMonth, getMonthlyTotals, formatCurrency, setMonthlyBudget, setActiveScreen, syncWithSupabase, deleteSavingsGoal } = useStore();
     const [isBudgetModalOpen, setIsBudgetModalOpen] = useState(false);
     const [isTransactionModalOpen, setIsTransactionModalOpen] = useState(false);
-    const [activeCardDetail, setActiveCardDetail] = useState(null); // 'income', 'emergency', 'expenses', 'savings'
+    const [activeCardDetail, setActiveCardDetail] = useState(null);
+    const [isGoalModalOpen, setIsGoalModalOpen] = useState(false);
+    const [editingGoal, setEditingGoal] = useState(null);
     const [tempBudget, setTempBudget] = useState(data.monthlyBudget || 30000);
 
     const { income, expenses, transactions } = getMonthlyTotals(selectedMonth);
@@ -239,32 +284,59 @@ const MonthlyPlanner = () => {
                     <SpendingBarChart data={categoryData} />
                 </div>
 
-                {/* Savings Goals Context */}
+                {/* Savings Goals */}
                 <div style={{ marginBottom: '24px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                        <h3 style={{ fontSize: '18px', fontWeight: '800', margin: 0 }}>Projected Goals</h3>
-                        <div style={{ fontSize: '11px', color: 'var(--accent-primary)', fontWeight: '800', textTransform: 'uppercase' }}>View All →</div>
+                        <h3 style={{ fontSize: '18px', fontWeight: '800', margin: 0 }}>Savings Goals</h3>
+                        <button
+                            onClick={() => { setEditingGoal(null); setIsGoalModalOpen(true); }}
+                            style={{ background: 'var(--accent-primary)', color: 'white', border: 'none', borderRadius: '10px', padding: '7px 14px', fontSize: '12px', fontWeight: '800', cursor: 'pointer' }}
+                        >
+                            + Add
+                        </button>
                     </div>
-                    
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                        {(data.savingsGoals || []).slice(0, 2).map(goal => {
-                            const progress = (goal.saved / goal.target) * 100;
-                            return (
-                                <div key={goal.id} className="card" style={{ padding: '16px 20px', borderRadius: '24px' }}>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: goal.color }} />
-                                            <span style={{ fontWeight: '700', fontSize: '14px' }}>{goal.name}</span>
+
+                    {(data.savingsGoals || []).length === 0 ? (
+                        <div style={{ textAlign: 'center', padding: '32px', background: 'var(--input-bg)', borderRadius: '20px', color: 'var(--text-secondary)', fontSize: '14px', fontWeight: '500' }}>
+                            No goals yet — tap + Add to create one
+                        </div>
+                    ) : (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                            {(data.savingsGoals || []).map(goal => {
+                                const progress = goal.target > 0 ? Math.min(100, (goal.saved / goal.target) * 100) : 0;
+                                return (
+                                    <div key={goal.id} className="card" style={{ padding: '16px 20px', borderRadius: '24px' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '10px' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                                <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: goal.color, flexShrink: 0 }} />
+                                                <span style={{ fontWeight: '700', fontSize: '14px' }}>{goal.name}</span>
+                                            </div>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                <span style={{ fontSize: '12px', fontWeight: '800', color: goal.color }}>{Math.round(progress)}%</span>
+                                                <button onClick={() => { setEditingGoal(goal); setIsGoalModalOpen(true); }} style={{ background: 'var(--input-bg)', border: 'none', width: '28px', height: '28px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                                                    <Edit2 size={12} color="var(--text-secondary)" />
+                                                </button>
+                                                <button onClick={() => { deleteSavingsGoal(goal.id); syncWithSupabase(); }} style={{ background: 'none', border: 'none', color: 'var(--accent-danger)', opacity: 0.4, cursor: 'pointer', padding: '4px' }}>
+                                                    <Trash2 size={13} />
+                                                </button>
+                                            </div>
                                         </div>
-                                        <span style={{ fontSize: '12px', fontWeight: '800' }}>{Math.round(progress)}%</span>
+                                        <div style={{ height: '8px', background: 'var(--input-bg)', borderRadius: '4px', overflow: 'hidden', marginBottom: '6px' }}>
+                                            <motion.div
+                                                initial={{ width: 0 }}
+                                                animate={{ width: `${progress}%` }}
+                                                style={{ height: '100%', background: goal.color, borderRadius: '4px' }}
+                                            />
+                                        </div>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                            <span style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: '600' }}>Saved: {formatCurrency(goal.saved)}</span>
+                                            <span style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: '600' }}>Target: {formatCurrency(goal.target)}</span>
+                                        </div>
                                     </div>
-                                    <div style={{ height: '6px', background: 'var(--input-bg)', borderRadius: '3px', overflow: 'hidden' }}>
-                                        <div style={{ width: `${progress}%`, height: '100%', background: goal.color, borderRadius: '3px' }} />
-                                    </div>
-                                </div>
-                            );
-                        })}
-                    </div>
+                                );
+                            })}
+                        </div>
+                    )}
                 </div>
             </div>
 
@@ -296,6 +368,17 @@ const MonthlyPlanner = () => {
 
             <Modal isOpen={isTransactionModalOpen} onClose={() => setIsTransactionModalOpen(false)} title="New Entry">
                 <TransactionForm onComplete={() => setIsTransactionModalOpen(false)} />
+            </Modal>
+
+            <Modal
+                isOpen={isGoalModalOpen}
+                onClose={() => { setIsGoalModalOpen(false); setEditingGoal(null); }}
+                title={editingGoal ? 'Edit Goal' : 'New Savings Goal'}
+            >
+                <GoalForm
+                    initialData={editingGoal}
+                    onComplete={() => { setIsGoalModalOpen(false); setEditingGoal(null); syncWithSupabase(); }}
+                />
             </Modal>
 
             {/* Drill-down Detail Modals */}

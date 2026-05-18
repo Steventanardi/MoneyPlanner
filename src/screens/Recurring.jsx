@@ -1,15 +1,15 @@
 import React, { useState } from 'react';
 import useStore from '../store/useStore';
-import { 
-    Music, 
-    Tv, 
-    CheckCircle, 
-    Circle, 
-    Plus, 
-    Trash2, 
-    Calendar, 
+import {
+    Music,
+    Tv,
+    CheckCircle,
+    Circle,
+    Plus,
+    Trash2,
+    Edit2,
+    Calendar,
     CreditCard,
-    ChevronRight,
     ArrowRightCircle,
     Bell
 } from 'lucide-react';
@@ -55,6 +55,7 @@ const Recurring = () => {
     const { data, toggleBillStatus, deleteRecurring, formatCurrency, currentUser, syncWithSupabase } = useStore();
     const [activeTab, setActiveTab] = useState('subscriptions');
     const [isAdding, setIsAdding] = useState(false);
+    const [editingItem, setEditingItem] = useState(null);
     const [payingBill, setPayingBill] = useState(null);
 
     const totalSubs = data.subscriptions.reduce((acc, sub) => acc + sub.amount, 0);
@@ -170,8 +171,11 @@ const Recurring = () => {
                                                 <div style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: '600' }}>{sub.category} • Monthly</div>
                                             </div>
                                         </div>
-                                        <div style={{ textAlign: 'right', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                        <div style={{ textAlign: 'right', display: 'flex', alignItems: 'center', gap: '8px' }}>
                                             <div style={{ fontWeight: '900', fontSize: '16px' }}>{formatCurrency(sub.amount)}</div>
+                                            <button onClick={() => setEditingItem({ item: sub, type: 'subscriptions' })} style={{ background: 'var(--input-bg)', border: 'none', width: '32px', height: '32px', borderRadius: '9px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                                                <Edit2 size={14} color="var(--text-secondary)" />
+                                            </button>
                                             <button onClick={() => deleteRecurring('subscriptions', sub.id)} style={{ background: 'none', border: 'none', color: 'var(--accent-danger)', opacity: 0.4, cursor: 'pointer' }}>
                                                 <Trash2 size={16} />
                                             </button>
@@ -228,10 +232,10 @@ const Recurring = () => {
                                                 </div>
                                             </div>
                                         </div>
-                                        <div style={{ textAlign: 'right', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                        <div style={{ textAlign: 'right', display: 'flex', alignItems: 'center', gap: '8px' }}>
                                             <div style={{ fontWeight: '900', fontSize: '16px' }}>{formatCurrency(bill.amount)}</div>
                                             {!bill.isPaid && (
-                                                <motion.button 
+                                                <motion.button
                                                     whileTap={{ scale: 0.9 }}
                                                     onClick={() => setPayingBill(bill)}
                                                     style={{ background: 'var(--accent-primary)', color: 'white', border: 'none', borderRadius: '10px', padding: '6px 12px', fontSize: '12px', fontWeight: '800', cursor: 'pointer' }}
@@ -239,6 +243,9 @@ const Recurring = () => {
                                                     Pay
                                                 </motion.button>
                                             )}
+                                            <button onClick={() => setEditingItem({ item: bill, type: 'bills' })} style={{ background: 'var(--input-bg)', border: 'none', width: '32px', height: '32px', borderRadius: '9px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                                                <Edit2 size={14} color="var(--text-secondary)" />
+                                            </button>
                                             <button onClick={() => deleteRecurring('bills', bill.id)} style={{ background: 'none', border: 'none', color: 'var(--accent-danger)', opacity: 0.4, cursor: 'pointer' }}>
                                                 <Trash2 size={16} />
                                             </button>
@@ -259,11 +266,22 @@ const Recurring = () => {
             >
                 <RecurringForm
                     type={activeTab}
-                    onComplete={() => {
-                        setIsAdding(false);
-                        syncWithSupabase();
-                    }}
+                    onComplete={() => { setIsAdding(false); syncWithSupabase(); }}
                 />
+            </Modal>
+
+            <Modal
+                isOpen={!!editingItem}
+                onClose={() => setEditingItem(null)}
+                title={`Edit ${editingItem?.type === 'subscriptions' ? 'Subscription' : 'Bill'}`}
+            >
+                {editingItem && (
+                    <RecurringForm
+                        type={editingItem.type}
+                        initialData={editingItem.item}
+                        onComplete={() => { setEditingItem(null); syncWithSupabase(); }}
+                    />
+                )}
             </Modal>
 
             <Modal isOpen={!!payingBill} onClose={() => setPayingBill(null)} title="Settle Bill">

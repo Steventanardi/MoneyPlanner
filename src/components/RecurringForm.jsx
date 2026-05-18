@@ -14,16 +14,17 @@ import {
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
-const RecurringForm = ({ type, onComplete }) => {
-    const { addSubscription, addBill, currentUser, pushToSupabase } = useStore();
+const RecurringForm = ({ type, onComplete, initialData }) => {
+    const { addSubscription, addBill, updateRecurring, currentUser, pushToSupabase } = useStore();
+    const isEdit = !!initialData;
     const [formError, setFormError] = useState('');
     const [formData, setFormData] = useState({
-        name: '',
-        amount: '',
-        category: type === 'subscriptions' ? 'Entertainment' : 'Housing',
-        frequency: 'monthly',
-        icon: 'Calendar',
-        dueDate: '1',
+        name: initialData?.name || '',
+        amount: initialData?.amount || '',
+        category: initialData?.category || (type === 'subscriptions' ? 'Entertainment' : 'Housing'),
+        frequency: initialData?.frequency || 'monthly',
+        icon: initialData?.icon || 'Calendar',
+        dueDate: initialData?.dueDate || '1',
     });
 
     if (!currentUser) return null;
@@ -41,7 +42,12 @@ const RecurringForm = ({ type, onComplete }) => {
         }
         setFormError('');
 
-        if (type === 'subscriptions') {
+        if (isEdit) {
+            const updates = type === 'subscriptions'
+                ? { name: formData.name, amount: parsedAmount, category: formData.category, frequency: formData.frequency, icon: formData.icon }
+                : { name: formData.name, amount: parsedAmount, category: formData.category, dueDate: parseInt(formData.dueDate) };
+            updateRecurring(type, initialData.id, updates);
+        } else if (type === 'subscriptions') {
             addSubscription({
                 name: formData.name,
                 amount: parsedAmount,
@@ -176,7 +182,7 @@ const RecurringForm = ({ type, onComplete }) => {
                 className="btn-primary"
                 style={{ height: '56px', marginTop: '12px' }}
             >
-                Confirm Setup
+                {isEdit ? 'Save Changes' : 'Confirm Setup'}
             </button>
         </form>
     );

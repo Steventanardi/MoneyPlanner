@@ -17,7 +17,7 @@ import {
     Shield,
     PiggyBank
 } from 'lucide-react';
-import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, BarChart, Bar, Cell } from 'recharts';
+import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, BarChart, Bar, Cell, PieChart, Pie } from 'recharts';
 import { useStore } from '../store/useStore';
 import Modal from '../components/Modal';
 import TransactionForm from '../components/TransactionForm';
@@ -278,6 +278,50 @@ const Dashboard = () => {
                         </div>
                     </div>
                 </div>
+
+                {/* Budget Ring */}
+                {(() => {
+                    const budget = data?.monthlyBudget || 30000;
+                    const pct = budget > 0 ? Math.min(100, (expense / budget) * 100) : 0;
+                    const remaining = Math.max(0, budget - expense);
+                    const ringColor = pct > 90 ? 'var(--accent-danger)' : pct > 75 ? '#FF9500' : 'var(--accent-success)';
+                    const donutData = [
+                        { value: expense },
+                        { value: Math.max(0, budget - expense) }
+                    ];
+                    return (
+                        <motion.div
+                            whileTap={{ scale: 0.98 }}
+                            onClick={() => setActiveScreen('monthly')}
+                            className="card glass-card"
+                            style={{ padding: '20px 24px', display: 'flex', alignItems: 'center', gap: '20px', cursor: 'pointer', marginTop: '16px' }}
+                        >
+                            <div style={{ position: 'relative', width: '72px', height: '72px', flexShrink: 0 }}>
+                                <PieChart width={72} height={72}>
+                                    <Pie data={donutData} cx={30} cy={30} innerRadius={24} outerRadius={34} startAngle={90} endAngle={-270} dataKey="value" strokeWidth={0}>
+                                        <Cell fill={ringColor} />
+                                        <Cell fill="var(--input-bg)" />
+                                    </Pie>
+                                </PieChart>
+                                <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: '900', color: ringColor }}>
+                                    {Math.round(pct)}%
+                                </div>
+                            </div>
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                                <div style={{ fontSize: '11px', fontWeight: '800', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '4px' }}>
+                                    Monthly Budget
+                                </div>
+                                <div style={{ fontSize: '18px', fontWeight: '900', letterSpacing: '-0.5px' }}>
+                                    {formatCurrency(remaining)} <span style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-secondary)' }}>left</span>
+                                </div>
+                                <div style={{ fontSize: '12px', color: 'var(--text-secondary)', fontWeight: '500', marginTop: '2px' }}>
+                                    {formatCurrency(expense)} spent of {formatCurrency(budget)}
+                                </div>
+                            </div>
+                            <ChevronRight size={18} color="var(--text-secondary)" style={{ flexShrink: 0 }} />
+                        </motion.div>
+                    );
+                })()}
 
                 {/* Quick Actions - Moved Higher */}
                 <div style={{ margin: '24px 0', display: 'flex', gap: '12px' }}>

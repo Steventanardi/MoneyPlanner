@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Package, Plus, Trash2, Edit2, Calendar, X, AlertTriangle } from 'lucide-react';
+import { Package, Plus, Trash2, Edit2, Calendar, X, AlertTriangle, Search } from 'lucide-react';
 import { useStore } from '../store/useStore';
 import useResponsive from '../hooks/useResponsive';
 
@@ -29,6 +29,7 @@ const Inventory = () => {
   const { isDesktop } = useResponsive();
   const [filter, setFilter]         = useState('all');
   const [sort, setSort]             = useState('expiry');
+  const [search, setSearch]         = useState('');
   const [showModal, setShowModal]   = useState(false);
   const [editItem, setEditItem]     = useState(null);
   const [form, setForm]             = useState(EMPTY_FORM);
@@ -53,18 +54,21 @@ const Inventory = () => {
       ? items.filter(i => { const { daysLeft } = getExpiryInfo(i.expiryDate); return daysLeft !== null && daysLeft < 0; })
       : [...items];
 
-    return list.sort((a, b) => {
+    const filtered = search.trim()
+      ? list.filter(i => i.name.toLowerCase().includes(search.toLowerCase()) || (i.notes || '').toLowerCase().includes(search.toLowerCase()))
+      : list;
+
+    return filtered.sort((a, b) => {
       if (sort === 'name') return a.name.localeCompare(b.name);
       if (sort === 'value') return Number(b.buyPrice || 0) - Number(a.buyPrice || 0);
       if (sort === 'newest') return new Date(b.buyDate || 0) - new Date(a.buyDate || 0);
-      // default: expiry (soonest first, no-expiry at end)
       const ai = getExpiryInfo(a.expiryDate), bi = getExpiryInfo(b.expiryDate);
       if (ai.daysLeft === null && bi.daysLeft === null) return 0;
       if (ai.daysLeft === null) return 1;
       if (bi.daysLeft === null) return -1;
       return ai.daysLeft - bi.daysLeft;
     });
-  }, [items, filter, sort]);
+  }, [items, filter, sort, search]);
 
   const openAdd = () => {
     setEditItem(null);
@@ -158,6 +162,22 @@ const Inventory = () => {
             <div style={{ fontSize: '10px', fontWeight: '800', color: 'var(--text-secondary)', textTransform: 'uppercase', marginTop: '4px', letterSpacing: '0.3px' }}>{s.label}</div>
           </motion.div>
         ))}
+      </div>
+
+      {/* Search */}
+      <div style={{ position: 'relative', marginBottom: '14px' }}>
+        <Search size={16} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)', pointerEvents: 'none' }} />
+        <input
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          placeholder="Search items…"
+          style={{ paddingLeft: '42px', paddingRight: search ? '36px' : '14px', height: '44px', borderRadius: '14px', marginBottom: 0 }}
+        />
+        {search && (
+          <button onClick={() => setSearch('')} style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)', display: 'flex', padding: '4px' }}>
+            <X size={14} />
+          </button>
+        )}
       </div>
 
       {/* Filter Tabs */}

@@ -140,7 +140,7 @@ const Settings = () => {
 
     return (
         <div style={{ paddingBottom: '120px' }}>
-            <header style={{ padding: '30px 20px 24px' }}>
+            <header style={{ padding: 'calc(env(safe-area-inset-top, 0px) + 20px) 20px 24px' }}>
                 <h1 style={{ fontSize: '36px', fontWeight: '900', letterSpacing: '-1.5px', margin: 0 }}>Preferences</h1>
                 <p style={{ color: 'var(--text-secondary)', fontSize: '15px', fontWeight: '500' }}>System & Metadata</p>
             </header>

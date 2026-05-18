@@ -1,15 +1,16 @@
 import React from 'react';
-import { Home, Calendar, Package, Wallet, CreditCard, Coins, Settings as SettingsIcon, Sun, Moon } from 'lucide-react';
+import { Home, Calendar, Package, Wallet, CreditCard, Coins, Settings as SettingsIcon, Sun, Moon, Clock } from 'lucide-react';
 import { useStore } from '../store/useStore';
 import useResponsive from '../hooks/useResponsive';
 
 const NAV_ITEMS = [
-  { id: 'dashboard', label: 'Home',     icon: Home         },
-  { id: 'monthly',   label: 'Planner',  icon: Calendar     },
-  { id: 'recurring', label: 'Bills',    icon: CreditCard   },
-  { id: 'inventory', label: 'Stock',    icon: Package      },
-  { id: 'banks',     label: 'Vault',    icon: Wallet       },
-  { id: 'settings',  label: 'Settings', icon: SettingsIcon },
+  { id: 'dashboard', label: 'Home',    icon: Home         },
+  { id: 'monthly',   label: 'Planner', icon: Calendar     },
+  { id: 'recurring', label: 'Bills',   icon: CreditCard   },
+  { id: 'inventory', label: 'Stock',   icon: Package      },
+  { id: 'banks',     label: 'Vault',   icon: Wallet       },
+  { id: 'history',   label: 'History', icon: Clock        },
+  { id: 'settings',  label: 'Account', icon: SettingsIcon },
 ];
 
 /* ── Desktop sidebar ─────────────────────────────────────── */
@@ -140,7 +141,7 @@ const BottomNav = ({ activeScreen, setActiveScreen, currentUser }) => {
             }}
           >
             <Icon
-              size={21}
+              size={19}
               strokeWidth={isActive ? 2.5 : 1.8}
               color={isActive ? accent : 'var(--text-secondary)'}
             />
