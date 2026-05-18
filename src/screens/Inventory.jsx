@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Package, Plus, Trash2, Edit2, Calendar, X, AlertTriangle } from 'lucide-react';
 import { useStore } from '../store/useStore';
+import useResponsive from '../hooks/useResponsive';
 
 const getExpiryInfo = (expiryDate) => {
   if (!expiryDate) return { label: 'No Expiry', color: '#8E8E93', bgColor: 'rgba(142,142,147,0.12)', daysLeft: null };
@@ -25,6 +26,7 @@ const EMPTY_FORM = { name: '', quantity: '', buyDate: '', expiryDate: '', buyPri
 
 const Inventory = () => {
   const { data, currentUser, addInventoryItem, updateInventoryItem, deleteInventoryItem, formatCurrency } = useStore();
+  const { isDesktop } = useResponsive();
   const [filter, setFilter]         = useState('all');
   const [showModal, setShowModal]   = useState(false);
   const [editItem, setEditItem]     = useState(null);
@@ -346,18 +348,23 @@ const Inventory = () => {
             style={{
               position: 'fixed', inset: 0, zIndex: 1000,
               background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(10px)',
-              display: 'flex', alignItems: 'flex-end'
+              display: 'flex',
+              alignItems: isDesktop ? 'center' : 'flex-end',
+              justifyContent: isDesktop ? 'center' : 'stretch',
+              padding: isDesktop ? '24px' : '0'
             }}
             onClick={e => e.target === e.currentTarget && setShowModal(false)}
           >
             <motion.div
-              initial={{ y: '100%' }}
-              animate={{ y: 0 }}
-              exit={{ y: '100%' }}
+              initial={isDesktop ? { opacity: 0, scale: 0.95, y: 0 } : { y: '100%' }}
+              animate={isDesktop ? { opacity: 1, scale: 1, y: 0 }   : { y: 0 }}
+              exit={isDesktop  ? { opacity: 0, scale: 0.95, y: 0 }  : { y: '100%' }}
               transition={{ type: 'spring', damping: 32, stiffness: 320 }}
               style={{
-                width: '100%', background: 'var(--card-bg)',
-                borderRadius: '28px 28px 0 0', padding: '24px 24px 44px',
+                width: '100%', maxWidth: isDesktop ? '560px' : '100%',
+                background: 'var(--card-bg)',
+                borderRadius: isDesktop ? '28px' : '28px 28px 0 0',
+                padding: '24px 24px 44px',
                 maxHeight: '88vh', overflowY: 'auto'
               }}
             >

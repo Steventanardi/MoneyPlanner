@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useStore } from './store/useStore';
 import ErrorBoundary from './components/ErrorBoundary';
 import { SESSION_TIMEOUT_MS, RATE_FETCH_INTERVAL_MS, TIMEOUT_CHECK_INTERVAL_MS } from './constants';
+import useResponsive from './hooks/useResponsive';
 
 // Screens
 import Navigation from './components/Navigation';
@@ -38,6 +39,7 @@ const App = () => {
         document.body.className = `${theme}-theme`;
     }, [theme]);
 
+    const { isDesktop } = useResponsive();
     const [isKeyboardVisible, setIsKeyboardVisible] = React.useState(false);
 
     useEffect(() => {
@@ -116,7 +118,7 @@ const App = () => {
             <div style={{ position: 'fixed', top: '10%', right: '-5%', width: '300px', height: '300px', borderRadius: '50%', background: 'linear-gradient(135deg, hsla(var(--hue-primary), 100%, 50%, 0.1), transparent)', filter: 'blur(80px)', zIndex: 0, pointerEvents: 'none' }} />
             <div style={{ position: 'fixed', bottom: '15%', left: '-5%', width: '250px', height: '250px', borderRadius: '50%', background: 'linear-gradient(135deg, hsla(var(--hue-danger), 100%, 50%, 0.05), transparent)', filter: 'blur(60px)', zIndex: 0, pointerEvents: 'none' }} />
 
-            <main className="main-content no-scrollbar" style={{ position: 'relative' }}>
+            <main className="main-content no-scrollbar" style={{ position: 'relative', marginLeft: isDesktop ? '240px' : 0 }}>
                 <ErrorBoundary>
                     <AnimatePresence mode="wait">
                         <motion.div

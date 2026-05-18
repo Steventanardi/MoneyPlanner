@@ -425,3 +425,100 @@ input:focus, select:focus {
 body.theme-transitioning * {
   transition: background-color 0.5s ease, color 0.5s ease, border-color 0.5s ease !important;
 }
+
+/* ================================================================
+   RESPONSIVE LAYOUT SYSTEM
+   Phone  < 768px  — single-column, bottom nav
+   Tablet 768–1023px — wider container, bottom nav centred
+   Desktop ≥ 1024px — full-width, left sidebar nav
+================================================================ */
+
+/* Base screen helpers (used by all screens) */
+.screen-container {
+  padding: 20px 20px 120px;
+  width: 100%;
+}
+
+.screen-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+/* ---- Tablet: 768px+ ---- */
+@media (min-width: 768px) {
+  .iphone-container {
+    max-width: 100%;
+    box-shadow: none;
+  }
+
+  /* Centre & widen the floating nav pill */
+  .nav-floating {
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
+    width: min(520px, calc(100vw - 40px));
+  }
+
+  .screen-container {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 28px 32px 120px;
+  }
+
+  .modal-content {
+    max-width: 560px;
+  }
+}
+
+/* ---- Desktop: 1024px+ ---- */
+@media (min-width: 1024px) {
+  .iphone-container {
+    max-width: 100%;
+    box-shadow: none;
+  }
+
+  /* Push content right of the 240px sidebar */
+  .main-content {
+    margin-left: 240px;
+  }
+
+  .screen-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 48px 56px 60px;
+  }
+
+  .screen-header {
+    margin-bottom: 32px;
+  }
+
+  /* Two-column grids → three on desktop */
+  .grid-2 {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  /* Modals: bottom-sheet → centred dialog */
+  .modal-overlay-desktop {
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+
+  .modal-sheet-desktop {
+    border-radius: 28px;
+    max-width: 540px;
+    width: 100%;
+    margin: 0 auto;
+    padding-bottom: 32px;
+  }
+}
+
+/* ---- Large desktop: 1440px+ ---- */
+@media (min-width: 1440px) {
+  .screen-container {
+    max-width: 1100px;
+    padding: 56px 72px 60px;
+  }
+}
