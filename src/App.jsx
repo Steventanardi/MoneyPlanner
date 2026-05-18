@@ -4,6 +4,7 @@ import { useStore } from './store/useStore';
 import ErrorBoundary from './components/ErrorBoundary';
 import { SESSION_TIMEOUT_MS, RATE_FETCH_INTERVAL_MS, TIMEOUT_CHECK_INTERVAL_MS } from './constants';
 import useResponsive from './hooks/useResponsive';
+import { requestNotificationPermission, checkExpiryNotifications } from './utils/notifications';
 
 // Screens
 import Navigation from './components/Navigation';
@@ -30,6 +31,12 @@ const App = () => {
         if (currentUser) {
             syncWithSupabase();
             checkAndResetBills();
+            // Request permission then immediately check for items expiring within 3 days
+            requestNotificationPermission().then(granted => {
+                if (granted) {
+                    checkExpiryNotifications(useStore.getState().data.inventory, currentUser.id);
+                }
+            });
         }
     }, [currentUser]);
 
@@ -88,9 +95,18 @@ const App = () => {
 
         const timeoutCheckInterval = setInterval(checkTimeout, TIMEOUT_CHECK_INTERVAL_MS);
 
+        // Re-check expiry notifications every hour while the app is open
+        const expiryInterval = setInterval(() => {
+            const state = useStore.getState();
+            if (state.currentUser) {
+                checkExpiryNotifications(state.data.inventory, state.currentUser.id);
+            }
+        }, 60 * 60 * 1000);
+
         return () => {
              clearInterval(rateInterval);
              clearInterval(timeoutCheckInterval);
+             clearInterval(expiryInterval);
              window.removeEventListener('visibilitychange', onUserActivity);
              window.removeEventListener('mousedown', onUserActivity);
              window.removeEventListener('keydown', onUserActivity);

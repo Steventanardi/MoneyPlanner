@@ -40,7 +40,7 @@ const Inventory = () => {
 
   const stats = useMemo(() => {
     const totalQty   = items.reduce((s, i) => s + Number(i.quantity || 0), 0);
-    const totalValue = items.reduce((s, i) => s + Number(i.buyPrice || 0) * Number(i.quantity || 1), 0);
+    const totalValue = items.reduce((s, i) => s + Number(i.buyPrice || 0), 0);
     const urgent     = items.filter(i => { const { daysLeft } = getExpiryInfo(i.expiryDate); return daysLeft !== null && daysLeft <= 7; }).length;
     return { total: items.length, totalQty, totalValue, urgent };
   }, [items]);
@@ -73,9 +73,11 @@ const Inventory = () => {
     setShowModal(true);
   };
 
+  const isFormValid = form.name.trim() && form.quantity && form.buyPrice && form.buyDate;
+
   const handleSave = () => {
-    if (!form.name.trim() || !form.quantity) return;
-    const payload = { ...form, quantity: Number(form.quantity), buyPrice: Number(form.buyPrice) || 0 };
+    if (!isFormValid) return;
+    const payload = { ...form, quantity: Number(form.quantity), buyPrice: Number(form.buyPrice) };
     if (editItem) updateInventoryItem(editItem.id, payload);
     else addInventoryItem(payload);
     setShowModal(false);
@@ -207,8 +209,6 @@ const Inventory = () => {
         <AnimatePresence>
           {sortedItems.map((item, idx) => {
             const expiry = getExpiryInfo(item.expiryDate);
-            const unitValue = Number(item.buyPrice || 0);
-            const totalItemValue = unitValue * Number(item.quantity || 1);
             const isDeleting = deleteConfirm === item.id;
 
             return (
@@ -245,7 +245,7 @@ const Inventory = () => {
                       </div>
 
                       {/* Qty + price row */}
-                      <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+                      <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
                         <span style={{
                           fontSize: '13px', fontWeight: '700',
                           color: 'var(--text-secondary)',
@@ -254,15 +254,10 @@ const Inventory = () => {
                         }}>
                           × {item.quantity} units
                         </span>
-                        {unitValue > 0 && (
-                          <>
-                            <span style={{ fontSize: '12px', color: 'var(--text-secondary)', fontWeight: '600' }}>
-                              {formatCurrency(unitValue)}/unit
-                            </span>
-                            <span style={{ fontSize: '13px', color: '#34C759', fontWeight: '800' }}>
-                              {formatCurrency(totalItemValue)}
-                            </span>
-                          </>
+                        {item.buyPrice > 0 && (
+                          <span style={{ fontSize: '13px', color: '#34C759', fontWeight: '800' }}>
+                            {formatCurrency(item.buyPrice)}
+                          </span>
                         )}
                       </div>
                     </div>
@@ -411,7 +406,7 @@ const Inventory = () => {
                     />
                   </div>
                   <div>
-                    <label style={labelStyle}>Buy Price / Unit</label>
+                    <label style={labelStyle}>Buy Price *</label>
                     <input
                       type="number" min="0"
                       value={form.buyPrice}
@@ -425,7 +420,7 @@ const Inventory = () => {
                 {/* Dates */}
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                   <div>
-                    <label style={labelStyle}>Buy Date</label>
+                    <label style={labelStyle}>Buy Date *</label>
                     <input
                       type="date"
                       value={form.buyDate}
@@ -455,8 +450,8 @@ const Inventory = () => {
                   />
                 </div>
 
-                {/* Preview total when price + qty filled */}
-                {form.buyPrice > 0 && form.quantity > 0 && (
+                {/* Confirmation preview */}
+                {form.buyPrice > 0 && (
                   <motion.div
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: 'auto' }}
@@ -466,25 +461,32 @@ const Inventory = () => {
                       display: 'flex', justifyContent: 'space-between', alignItems: 'center'
                     }}
                   >
-                    <span style={{ fontSize: '13px', fontWeight: '700', color: 'var(--text-secondary)' }}>Total stock value</span>
+                    <span style={{ fontSize: '13px', fontWeight: '700', color: 'var(--text-secondary)' }}>Total paid</span>
                     <span style={{ fontSize: '16px', fontWeight: '900', color: '#34C759' }}>
-                      {formatCurrency(Number(form.buyPrice) * Number(form.quantity))}
+                      {formatCurrency(Number(form.buyPrice))}
                     </span>
                   </motion.div>
+                )}
+
+                {/* Required field hint */}
+                {!isFormValid && (form.name || form.quantity || form.buyPrice || form.buyDate) && (
+                  <p style={{ fontSize: '12px', color: 'var(--accent-danger)', fontWeight: '600', textAlign: 'center' }}>
+                    * Item name, total items, buy price & buy date are required
+                  </p>
                 )}
 
                 {/* Save button */}
                 <motion.button
                   whileTap={{ scale: 0.97 }}
                   onClick={handleSave}
-                  disabled={!form.name.trim() || !form.quantity}
+                  disabled={!isFormValid}
                   style={{
                     width: '100%', padding: '17px', borderRadius: '16px',
-                    border: 'none', cursor: form.name.trim() && form.quantity ? 'pointer' : 'default',
-                    background: form.name.trim() && form.quantity ? 'var(--accent-primary)' : 'var(--input-bg)',
-                    color: form.name.trim() && form.quantity ? 'white' : 'var(--text-secondary)',
+                    border: 'none', cursor: isFormValid ? 'pointer' : 'default',
+                    background: isFormValid ? 'var(--accent-primary)' : 'var(--input-bg)',
+                    color: isFormValid ? 'white' : 'var(--text-secondary)',
                     fontSize: '16px', fontWeight: '800', marginTop: '4px',
-                    boxShadow: form.name.trim() && form.quantity ? '0 8px 20px -4px rgba(0,122,255,0.4)' : 'none',
+                    boxShadow: isFormValid ? '0 8px 20px -4px rgba(0,122,255,0.4)' : 'none',
                     transition: 'all 0.2s ease'
                   }}
                 >
