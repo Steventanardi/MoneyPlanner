@@ -335,7 +335,7 @@ body.theme-transitioning * {
 ================================================================ */
 
 .screen-container {
-  padding: 20px 20px 88px;
+  padding: calc(env(safe-area-inset-top, 0px) + 20px) 20px 88px;
   width: 100%;
 }
 
@@ -348,7 +348,7 @@ body.theme-transitioning * {
 
 @media (min-width: 768px) {
   .iphone-container { max-width: 100%; }
-  .screen-container { max-width: 720px; margin: 0 auto; padding: 28px 32px 88px; }
+  .screen-container { max-width: 720px; margin: 0 auto; padding: calc(env(safe-area-inset-top, 0px) + 28px) 32px 88px; }
   .modal-content    { max-width: 560px; }
 }
 
