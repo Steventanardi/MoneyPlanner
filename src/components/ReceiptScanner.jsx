@@ -1,5 +1,5 @@
-import React, { useState, useRef } from 'react';
-import Tesseract from 'tesseract.js';
+import React, { useState, useRef, useEffect } from 'react';
+import { createWorker } from 'tesseract.js';
 import { Camera, X, RefreshCw, Loader2, Check } from 'lucide-react';
 
 const ReceiptScanner = ({ onScanComplete, onCancel }) => {
@@ -8,6 +8,36 @@ const ReceiptScanner = ({ onScanComplete, onCancel }) => {
     const [statusText, setStatusText] = useState('');
     const [previewImage, setPreviewImage] = useState(null);
     const fileInputRef = useRef(null);
+    const workerRef = useRef(null);
+
+    // Create Tesseract worker once on mount, terminate on unmount
+    useEffect(() => {
+        let worker;
+        const initWorker = async () => {
+            worker = await createWorker('chi_tra+eng', 1, {
+                logger: m => {
+                    if (m.status === 'recognizing text') {
+                        setStatusText(`Reading receipt... ${Math.round(m.progress * 100)}%`);
+                        setProgress(Math.round(m.progress * 100));
+                    } else if (m.status === 'loading tesseract core') {
+                        setStatusText('Loading AI core...');
+                    } else if (m.status === 'loading language traineddata') {
+                        setStatusText('Loading language data...');
+                    } else {
+                        setStatusText(m.status + '...');
+                    }
+                }
+            });
+            workerRef.current = worker;
+        };
+        initWorker();
+        return () => {
+            if (workerRef.current) {
+                workerRef.current.terminate();
+                workerRef.current = null;
+            }
+        };
+    }, []);
 
     const handleImageCapture = (e) => {
         const file = e.target.files[0];
@@ -27,24 +57,12 @@ const ReceiptScanner = ({ onScanComplete, onCancel }) => {
         setStatusText('Initializing AI engine...');
 
         try {
-            const { data: { text } } = await Tesseract.recognize(
-                image,
-                'chi_tra+eng',
-                {
-                    logger: m => {
-                        if (m.status === 'recognizing text') {
-                            setStatusText(`Reading receipt... ${Math.round(m.progress * 100)}%`);
-                            setProgress(Math.round(m.progress * 100));
-                        } else if (m.status === 'loading tesseract core') {
-                             setStatusText('Loading AI core...');
-                        } else if (m.status === 'loading language traineddata') {
-                             setStatusText('Loading language data...');
-                        } else {
-                            setStatusText(m.status + '...');
-                        }
-                    }
-                }
-            );
+            if (!workerRef.current) {
+                setStatusText('Worker not ready, please try again.');
+                setIsScanning(false);
+                return;
+            }
+            const { data: { text } } = await workerRef.current.recognize(image);
 
             setStatusText('Decoding details...');
             console.log('Final Extracted Text:', text);
