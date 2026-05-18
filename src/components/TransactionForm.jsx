@@ -79,7 +79,7 @@ const TransactionForm = ({ onComplete, initialData }) => {
             ...formData,
             id: txId,
             amount: storedAmount,
-            bankId: Number(formData.bankId),
+            bankId: formData.bankId,
             hasReceipt: !!receiptImage || (isEditing && initialData.hasReceipt)
         };
 
