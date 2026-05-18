@@ -130,9 +130,6 @@ const App = () => {
 
     return (
         <div className="iphone-container">
-            {/* Deep Background Glass Orbs */}
-            <div style={{ position: 'fixed', top: '10%', right: '-5%', width: '300px', height: '300px', borderRadius: '50%', background: 'linear-gradient(135deg, hsla(var(--hue-primary), 100%, 50%, 0.1), transparent)', filter: 'blur(80px)', zIndex: 0, pointerEvents: 'none' }} />
-            <div style={{ position: 'fixed', bottom: '15%', left: '-5%', width: '250px', height: '250px', borderRadius: '50%', background: 'linear-gradient(135deg, hsla(var(--hue-danger), 100%, 50%, 0.05), transparent)', filter: 'blur(60px)', zIndex: 0, pointerEvents: 'none' }} />
 
             <main className="main-content no-scrollbar" style={{ position: 'relative', marginLeft: isDesktop ? '240px' : 0 }}>
                 <ErrorBoundary>
@@ -159,18 +156,20 @@ const App = () => {
             {isSyncing && (
                 <div style={{
                     position: 'fixed',
-                    top: 'env(safe-area-inset-top, 24px)',
-                    right: '24px',
+                    top: 'env(safe-area-inset-top, 16px)',
+                    right: '16px',
                     zIndex: 3000,
-                    background: 'var(--accent-primary)',
-                    color: 'white',
-                    padding: '6px 12px',
-                    borderRadius: '12px',
+                    background: 'var(--card-bg)',
+                    color: 'var(--text-secondary)',
+                    padding: '5px 10px',
+                    borderRadius: '6px',
                     fontSize: '11px',
-                    fontWeight: '900',
-                    boxShadow: 'var(--shadow-md)'
+                    fontWeight: '700',
+                    border: '1px solid var(--glass-border)',
+                    letterSpacing: '0.5px',
+                    textTransform: 'uppercase'
                 }} className="sync-pulse">
-                    SYNCING...
+                    Syncing
                 </div>
             )}
         </div>
