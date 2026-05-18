@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useStore, USERS, hashPin } from '../store/useStore';
 import { MAX_PIN_ATTEMPTS, PIN_LOCKOUT_SECONDS } from '../constants';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Users, User, ArrowRight, ShieldCheck, Coins, ChevronLeft, Delete, ScanFace, CheckCircle2 } from 'lucide-react';
+import { User, ArrowRight, Coins, ChevronLeft, Delete, ScanFace } from 'lucide-react';
 
 const Login = () => {
     const { setCurrentUser, userBiometrics, pinAttempts, pinLockoutUntil, recordPinFailure, resetPinAttempts } = useStore();
@@ -139,7 +139,7 @@ const Login = () => {
                                 >
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
                                         <div style={{ width: '56px', height: '56px', borderRadius: '20px', background: `${user.color}15`, color: user.color, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                            {user.id === 'girl' ? <Users size={26} /> : <User size={26} />}
+                                            <User size={26} />
                                         </div>
                                         <div style={{ textAlign: 'left' }}>
                                             <div style={{ fontWeight: '800', fontSize: '18px' }}>{user.name}</div>
@@ -172,7 +172,7 @@ const Login = () => {
                                 backgroundColor: `${selectedUser.color}15`, color: selectedUser.color,
                                 margin: '0 auto 16px', display: 'flex', alignItems: 'center', justifyContent: 'center'
                             }}>
-                                {selectedUser.id === 'girl' ? <Users size={28} /> : <User size={28} />}
+                                <User size={28} />
                             </div>
                             <h2 style={{ fontSize: '24px', fontWeight: '900', marginBottom: '8px' }}>Enter Passcode</h2>
                             <p style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>Identify yourself, {selectedUser.name}</p>

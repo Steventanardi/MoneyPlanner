@@ -11,6 +11,7 @@ import MonthlyPlanner from './screens/MonthlyPlanner';
 import BankTracker from './screens/BankTracker';
 import Recurring from './screens/Recurring';
 import History from './screens/History';
+import Inventory from './screens/Inventory';
 import Login from './screens/Login';
 
 
@@ -102,6 +103,7 @@ const App = () => {
             case 'banks': return <BankTracker />;
             case 'history': return <History />;
             case 'recurring': return <Recurring />;
+            case 'inventory': return <Inventory />;
             default: return <Dashboard />;
         }
     };

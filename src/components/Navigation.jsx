@@ -1,5 +1,5 @@
 import React from 'react';
-import { Home, Calendar, Clock, Wallet, CreditCard } from 'lucide-react';
+import { Home, Calendar, Package, Wallet, CreditCard } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useStore } from '../store/useStore';
 
@@ -10,7 +10,7 @@ const Navigation = () => {
         { id: 'dashboard', label: 'Home', icon: Home },
         { id: 'monthly', label: 'Planner', icon: Calendar },
         { id: 'recurring', label: 'Bills', icon: CreditCard },
-        { id: 'history', label: 'History', icon: Clock },
+        { id: 'inventory', label: 'Stock', icon: Package },
         { id: 'banks', label: 'Vault', icon: Wallet },
     ];
 

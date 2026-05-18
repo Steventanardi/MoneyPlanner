@@ -14,7 +14,6 @@ const INITIAL_DATA = {
   banks: [
     { id: 'bank-twd', name: 'Bank TWD', value: 50000, currency: 'TWD', userId: 'steven' },
     { id: 'bank-idr', name: 'Bank IDR', value: 10000000, currency: 'IDR', userId: 'steven' },
-    { id: 'bank-girl', name: 'Girlfriend Bank', value: 20000, currency: 'TWD', userId: 'girl' }
   ],
   transactions: [],
   savingsGoals: [],
@@ -26,6 +25,7 @@ const INITIAL_DATA = {
   ],
   subscriptions: [],
   bills: [],
+  inventory: [],
   emergencyFund: 20000,
   monthlyBudget: 30000
 };
@@ -33,7 +33,6 @@ const INITIAL_DATA = {
 // PINs stored as SHA-256 hashes — never plaintext
 export const USERS = [
   { id: 'steven', name: 'Steven', color: '#007AFF', avatar: 'S', pinHash: '8e5fabc4550b9c8521b119ede0270237fd4891a697330a2ef5fdea4dde53bf13', role: 'Owner' },
-  { id: 'girl', name: 'Priscilla', color: '#FF3B30', avatar: 'G', pinHash: 'aa82088246685c17ebf16d48877686b831ed384ffdc42e76494283c271704d7a', role: 'Family' }
 ];
 
 export const useStore = create(
@@ -258,6 +257,34 @@ export const useStore = create(
       deleteRecurring: (type, id) => set((state) => {
           const newData = { ...state.data, [type]: state.data[type].filter(item => item.id !== id) };
           return { data: newData };
+      }),
+
+      // --- Inventory Actions ---
+      addInventoryItem: (item) => set((state) => {
+        const newItem = {
+          ...item,
+          id: crypto.randomUUID(),
+          userId: state.currentUser.id,
+          createdAt: new Date().toISOString()
+        };
+        const newData = { ...state.data, inventory: [...(state.data.inventory || []), newItem] };
+        return { data: newData };
+      }),
+
+      updateInventoryItem: (id, updates) => set((state) => {
+        const newData = {
+          ...state.data,
+          inventory: (state.data.inventory || []).map(item => item.id === id ? { ...item, ...updates } : item)
+        };
+        return { data: newData };
+      }),
+
+      deleteInventoryItem: (id) => set((state) => {
+        const newData = {
+          ...state.data,
+          inventory: (state.data.inventory || []).filter(item => item.id !== id)
+        };
+        return { data: newData };
       }),
 
       payBill: (billId, bankId) => set((state) => {
