@@ -1,8 +1,9 @@
 import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Package, Plus, Trash2, Edit2, Calendar, X, AlertTriangle, Search } from 'lucide-react';
+import { Package, Plus, Trash2, Edit2, Calendar, X, AlertTriangle, Search, ScanLine } from 'lucide-react';
 import { useStore } from '../store/useStore';
 import useResponsive from '../hooks/useResponsive';
+import BarcodeScanner from '../components/BarcodeScanner';
 
 const getExpiryInfo = (expiryDate) => {
   if (!expiryDate) return { label: 'No Expiry', color: '#8E8E93', bgColor: 'rgba(142,142,147,0.12)', daysLeft: null };
@@ -34,6 +35,7 @@ const Inventory = () => {
   const [editItem, setEditItem]     = useState(null);
   const [form, setForm]             = useState(EMPTY_FORM);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
+  const [showScanner, setShowScanner]   = useState(false);
 
   const items = useMemo(() =>
     (data.inventory || []).filter(i => i.userId === currentUser?.id),
@@ -102,6 +104,11 @@ const Inventory = () => {
       setDeleteConfirm(id);
       setTimeout(() => setDeleteConfirm(c => c === id ? null : c), 3000);
     }
+  };
+
+  const handleScanResult = ({ name }) => {
+    setShowScanner(false);
+    if (name) setForm(f => ({ ...f, name }));
   };
 
   const inputStyle = {
@@ -385,6 +392,16 @@ const Inventory = () => {
         </AnimatePresence>
       </div>
 
+      {/* Barcode Scanner Overlay */}
+      <AnimatePresence>
+        {showScanner && (
+          <BarcodeScanner
+            onResult={handleScanResult}
+            onCancel={() => setShowScanner(false)}
+          />
+        )}
+      </AnimatePresence>
+
       {/* Add / Edit Modal */}
       <AnimatePresence>
         {showModal && (
@@ -434,6 +451,24 @@ const Inventory = () => {
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                {/* Scan barcode button — only on add, not edit */}
+                {!editItem && (
+                  <motion.button
+                    whileTap={{ scale: 0.96 }}
+                    onClick={() => setShowScanner(true)}
+                    style={{
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px',
+                      padding: '14px', borderRadius: '14px', cursor: 'pointer',
+                      border: '1.5px dashed var(--accent-primary)',
+                      background: 'rgba(0,122,255,0.07)', color: 'var(--accent-primary)',
+                      fontSize: '14px', fontWeight: '800', width: '100%'
+                    }}
+                  >
+                    <ScanLine size={18} />
+                    Scan Barcode to Auto-Fill
+                  </motion.button>
+                )}
+
                 {/* Name */}
                 <div>
                   <label style={labelStyle}>Item Name *</label>
