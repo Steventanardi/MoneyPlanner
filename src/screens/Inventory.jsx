@@ -26,7 +26,7 @@ const fmtDate = (d) => d ? new Date(d).toLocaleDateString('en-US', { month: 'sho
 const EMPTY_FORM = { name: '', quantity: '', buyDate: '', expiryDate: '', buyPrice: '', notes: '' };
 
 const Inventory = () => {
-  const { data, currentUser, addInventoryItem, updateInventoryItem, deleteInventoryItem, formatCurrency } = useStore();
+  const { data, currentUser, addInventoryItem, updateInventoryItem, deleteInventoryItem, formatCurrency, pushToSupabase } = useStore();
   const { isDesktop } = useResponsive();
   const [filter, setFilter]         = useState('all');
   const [sort, setSort]             = useState('expiry');
@@ -91,6 +91,7 @@ const Inventory = () => {
     const payload = { ...form, quantity: Number(form.quantity), buyPrice: Number(form.buyPrice) };
     if (editItem) updateInventoryItem(editItem.id, payload);
     else addInventoryItem(payload);
+    pushToSupabase();
     setShowModal(false);
     setEditItem(null);
     setForm(EMPTY_FORM);
@@ -99,6 +100,7 @@ const Inventory = () => {
   const handleDelete = (id) => {
     if (deleteConfirm === id) {
       deleteInventoryItem(id);
+      pushToSupabase();
       setDeleteConfirm(null);
     } else {
       setDeleteConfirm(id);
