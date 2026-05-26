@@ -186,23 +186,7 @@ input:focus, select:focus {
   transform: scale(0.99);
 }
 
-/* ─── Navigation — mobile flat bar ──────────────────────── */
-.nav-floating {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: calc(60px + env(safe-area-inset-bottom, 0px));
-  padding-bottom: env(safe-area-inset-bottom, 0px);
-  background: var(--nav-bg);
-  border-top: 1px solid var(--glass-border);
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
-  padding-left: 4px;
-  padding-right: 4px;
-  z-index: 1000;
-}
+/* ─── Navigation — mobile pill + sheet (nav-floating unused) ── */
 
 /* ─── Typography ─────────────────────────────────────────── */
 .text-h1 {
@@ -335,7 +319,7 @@ body.theme-transitioning * {
 ================================================================ */
 
 .screen-container {
-  padding: calc(env(safe-area-inset-top, 0px) + 20px) 20px 88px;
+  padding: calc(env(safe-area-inset-top, 0px) + 20px) 20px 80px;
   width: 100%;
 }
 
@@ -348,7 +332,7 @@ body.theme-transitioning * {
 
 @media (min-width: 768px) {
   .iphone-container { max-width: 100%; }
-  .screen-container { max-width: 720px; margin: 0 auto; padding: calc(env(safe-area-inset-top, 0px) + 28px) 32px 88px; }
+  .screen-container { max-width: 720px; margin: 0 auto; padding: calc(env(safe-area-inset-top, 0px) + 28px) 32px 80px; }
   .modal-content    { max-width: 560px; }
 }
 

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Home, Calendar, Package, Wallet, CreditCard, Coins, Settings as SettingsIcon, Sun, Moon, Clock, MoreHorizontal } from 'lucide-react';
+import { Home, Calendar, Package, Wallet, CreditCard, Coins, Settings as SettingsIcon, Sun, Moon, Clock, ChevronUp } from 'lucide-react';
 import { useStore } from '../store/useStore';
 import useResponsive from '../hooks/useResponsive';
 
@@ -12,9 +12,6 @@ const NAV_ITEMS = [
   { id: 'history',   label: 'History', icon: Clock        },
   { id: 'settings',  label: 'Account', icon: SettingsIcon },
 ];
-
-const MOBILE_MAIN = NAV_ITEMS.slice(0, 5);
-const MOBILE_MORE = NAV_ITEMS.slice(5);
 
 /* ── Desktop sidebar ─────────────────────────────────────── */
 const Sidebar = ({ activeScreen, setActiveScreen, currentUser, theme, toggleTheme }) => {
@@ -120,61 +117,58 @@ const Sidebar = ({ activeScreen, setActiveScreen, currentUser, theme, toggleThem
   );
 };
 
-/* ── Mobile / tablet flat bottom bar ────────────────────── */
+/* ── Mobile: floating pill + bottom sheet ────────────────── */
 const BottomNav = ({ activeScreen, setActiveScreen, currentUser }) => {
   const accent = currentUser?.color || 'var(--accent-primary)';
-  const [showMore, setShowMore] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+
+  const activeItem = NAV_ITEMS.find(i => i.id === activeScreen) || NAV_ITEMS[0];
+  const ActiveIcon = activeItem.icon;
 
   const handleNav = (id) => {
     setActiveScreen(id);
-    setShowMore(false);
+    setIsOpen(false);
   };
-
-  const moreIsActive = MOBILE_MORE.some(i => i.id === activeScreen);
-
-  const btnStyle = (isActive) => ({
-    display: 'flex', flexDirection: 'column', alignItems: 'center',
-    justifyContent: 'center', flex: 1, height: '100%',
-    background: 'none', border: 'none', cursor: 'pointer',
-    gap: '4px', padding: '0 6px', minWidth: 0,
-    borderTop: isActive ? `2px solid ${accent}` : '2px solid transparent',
-    transition: 'border-color 0.15s ease',
-    marginTop: '-1px',
-  });
-
-  const labelStyle = (isActive) => ({
-    fontSize: '10px', fontWeight: isActive ? '700' : '500',
-    color: isActive ? accent : 'var(--text-secondary)',
-    textTransform: 'uppercase', letterSpacing: '0.3px',
-    whiteSpace: 'nowrap',
-  });
 
   return (
     <>
-      {/* More sheet backdrop */}
-      {showMore && (
+      {/* Backdrop — tap to close */}
+      {isOpen && (
         <div
-          onClick={() => setShowMore(false)}
-          style={{ position: 'fixed', inset: 0, zIndex: 998 }}
+          onClick={() => setIsOpen(false)}
+          style={{
+            position: 'fixed', inset: 0, zIndex: 998,
+            background: 'rgba(0,0,0,0.45)',
+            backdropFilter: 'blur(4px)',
+          }}
         />
       )}
 
-      {/* More sheet */}
-      {showMore && (
+      {/* Bottom sheet (always rendered for smooth slide transition) */}
+      <div style={{
+        position: 'fixed', bottom: 0, left: 0, right: 0,
+        zIndex: 999,
+        background: 'var(--card-bg)',
+        borderRadius: '24px 24px 0 0',
+        border: '1px solid var(--glass-border)',
+        borderBottom: 'none',
+        padding: '14px 16px',
+        paddingBottom: 'calc(24px + env(safe-area-inset-bottom, 0px))',
+        transform: isOpen ? 'translateY(0)' : 'translateY(100%)',
+        transition: 'transform 0.32s cubic-bezier(0.23, 1, 0.32, 1)',
+        boxShadow: '0 -12px 48px rgba(0,0,0,0.25)',
+        willChange: 'transform',
+      }}>
+        {/* Drag handle */}
         <div style={{
-          position: 'fixed',
-          bottom: 'calc(60px + env(safe-area-inset-bottom, 0px))',
-          left: '12px', right: '12px',
-          background: 'var(--card-bg)',
-          borderRadius: '20px',
-          padding: '12px',
-          zIndex: 999,
-          display: 'flex',
-          gap: '10px',
-          boxShadow: '0 -8px 32px rgba(0,0,0,0.18)',
-          border: '1px solid var(--glass-border)',
-        }}>
-          {MOBILE_MORE.map(item => {
+          width: '40px', height: '4px',
+          background: 'var(--glass-border)',
+          borderRadius: '2px', margin: '0 auto 18px',
+        }} />
+
+        {/* Nav grid — 4 per row, last 3 centered */}
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', justifyContent: 'center' }}>
+          {NAV_ITEMS.map(item => {
             const Icon = item.icon;
             const isActive = activeScreen === item.id;
             return (
@@ -182,42 +176,64 @@ const BottomNav = ({ activeScreen, setActiveScreen, currentUser }) => {
                 key={item.id}
                 onClick={() => handleNav(item.id)}
                 style={{
-                  flex: 1, padding: '16px 8px',
-                  borderRadius: '14px',
+                  width: 'calc(25% - 8px)',
+                  display: 'flex', flexDirection: 'column', alignItems: 'center',
+                  gap: '8px', padding: '18px 6px',
+                  borderRadius: '16px',
                   background: isActive ? `${accent}15` : 'var(--input-bg)',
-                  border: `1.5px solid ${isActive ? accent : 'transparent'}`,
+                  border: `2px solid ${isActive ? accent : 'transparent'}`,
                   cursor: 'pointer',
-                  display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '7px',
+                  transition: 'background 0.15s ease, border-color 0.15s ease',
+                  minWidth: 0,
                 }}
               >
-                <Icon size={22} strokeWidth={isActive ? 2.5 : 2} color={isActive ? accent : 'var(--text-secondary)'} />
-                <span style={{ fontSize: '12px', fontWeight: '700', color: isActive ? accent : 'var(--text-secondary)' }}>
+                <Icon
+                  size={26}
+                  strokeWidth={isActive ? 2.5 : 2}
+                  color={isActive ? accent : 'var(--text-secondary)'}
+                />
+                <span style={{
+                  fontSize: '11px', fontWeight: isActive ? '800' : '600',
+                  color: isActive ? accent : 'var(--text-secondary)',
+                  textTransform: 'uppercase', letterSpacing: '0.2px',
+                  lineHeight: 1,
+                }}>
                   {item.label}
                 </span>
               </button>
             );
           })}
         </div>
-      )}
+      </div>
 
-      <nav className="nav-floating">
-        {MOBILE_MAIN.map(item => {
-          const Icon = item.icon;
-          const isActive = activeScreen === item.id;
-          return (
-            <button key={item.id} onClick={() => handleNav(item.id)} style={btnStyle(isActive)}>
-              <Icon size={22} strokeWidth={isActive ? 2.5 : 1.8} color={isActive ? accent : 'var(--text-secondary)'} />
-              <span style={labelStyle(isActive)}>{item.label}</span>
-            </button>
-          );
-        })}
-
-        {/* More button */}
-        <button onClick={() => setShowMore(v => !v)} style={btnStyle(moreIsActive || showMore)}>
-          <MoreHorizontal size={22} strokeWidth={1.8} color={moreIsActive || showMore ? accent : 'var(--text-secondary)'} />
-          <span style={labelStyle(moreIsActive || showMore)}>More</span>
-        </button>
-      </nav>
+      {/* Floating pill trigger — small footprint, doesn't block content */}
+      <button
+        onClick={() => setIsOpen(v => !v)}
+        style={{
+          position: 'fixed',
+          bottom: `calc(14px + env(safe-area-inset-bottom, 0px))`,
+          left: '50%',
+          transform: 'translateX(-50%)',
+          zIndex: 1000,
+          display: 'flex', alignItems: 'center', gap: '8px',
+          padding: '11px 20px',
+          background: 'var(--card-bg)',
+          border: '1px solid var(--glass-border)',
+          borderRadius: '100px',
+          cursor: 'pointer',
+          boxShadow: '0 4px 24px rgba(0,0,0,0.18)',
+          opacity: isOpen ? 0 : 1,
+          pointerEvents: isOpen ? 'none' : 'auto',
+          transition: 'opacity 0.2s ease',
+          whiteSpace: 'nowrap',
+        }}
+      >
+        <ActiveIcon size={16} strokeWidth={2.5} color={accent} />
+        <span style={{ fontSize: '13px', fontWeight: '800', color: 'var(--text-primary)' }}>
+          {activeItem.label}
+        </span>
+        <ChevronUp size={14} color="var(--text-secondary)" strokeWidth={2.5} />
+      </button>
     </>
   );
 };
