@@ -214,12 +214,12 @@ const BottomNav = ({ activeScreen, setActiveScreen, currentUser }) => {
         onClick={() => setIsOpen(v => !v)}
         style={{
           position: 'fixed',
-          bottom: `calc(14px + env(safe-area-inset-bottom, 0px))`,
+          bottom: `calc(16px + env(safe-area-inset-bottom, 0px))`,
           left: '50%',
           transform: 'translateX(-50%)',
           zIndex: 1000,
           display: 'flex', alignItems: 'center', gap: '10px',
-          padding: '12px 22px',
+          padding: '14px 26px',
           background: activeItem.tint,
           border: 'none',
           borderRadius: '100px',
@@ -227,8 +227,10 @@ const BottomNav = ({ activeScreen, setActiveScreen, currentUser }) => {
           boxShadow: '0 8px 28px rgba(64, 40, 20, 0.22)',
           opacity: isOpen ? 0 : 1,
           pointerEvents: isOpen ? 'none' : 'auto',
-          transition: 'opacity 0.2s ease, transform 0.1s ease',
+          transition: 'opacity 0.2s ease',
           whiteSpace: 'nowrap',
+          minHeight: '52px',
+          WebkitTapHighlightColor: 'transparent',
         }}
       >
         <ActiveIcon size={16} strokeWidth={2.4} color={activeItem.ink} />

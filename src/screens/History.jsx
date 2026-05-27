@@ -168,7 +168,7 @@ const History = () => {
     };
 
     return (
-        <div style={{ paddingBottom: '120px' }}>
+        <div style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 120px)' }}>
             <header style={{ padding: 'calc(env(safe-area-inset-top, 40px) + 20px) 20px 20px' }}>
                 <h1 style={{ fontSize: '34px', fontWeight: '900', letterSpacing: '-1.2px', margin: 0, fontFamily: 'var(--font-display)' }}>Activity</h1>
                 <p style={{ color: 'var(--text-secondary)', fontSize: '13px', fontWeight: '600', marginTop: '2px', textTransform: 'uppercase', letterSpacing: '0.4px' }}>Transaction Log</p>

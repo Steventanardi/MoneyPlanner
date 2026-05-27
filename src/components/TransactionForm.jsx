@@ -207,7 +207,7 @@ const TransactionForm = ({ onComplete, initialData }) => {
                         <select
                             value={formData.category}
                             onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                            style={{ paddingLeft: '40px', background: 'var(--input-bg)', borderRadius: '14px', border: 'none', height: '48px', width: '100%', color: 'var(--text-primary)', fontSize: '14px', fontWeight: '600' }}
+                            style={{ paddingLeft: '40px', background: 'var(--input-bg)', borderRadius: '14px', border: 'none', height: '48px', width: '100%', color: 'var(--text-primary)', fontSize: '16px', fontWeight: '600' }}
                         >
                             {availableCategories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
                         </select>
@@ -217,7 +217,7 @@ const TransactionForm = ({ onComplete, initialData }) => {
                         <select
                             value={formData.bankId}
                             onChange={(e) => setFormData({ ...formData, bankId: e.target.value })}
-                            style={{ paddingLeft: '40px', background: 'var(--input-bg)', borderRadius: '14px', border: 'none', height: '48px', width: '100%', color: 'var(--text-primary)', fontSize: '14px', fontWeight: '600' }}
+                            style={{ paddingLeft: '40px', background: 'var(--input-bg)', borderRadius: '14px', border: 'none', height: '48px', width: '100%', color: 'var(--text-primary)', fontSize: '16px', fontWeight: '600' }}
                         >
                             {(data?.banks || []).map(bank => <option key={bank.id} value={bank.id}>{bank.name}</option>)}
                         </select>

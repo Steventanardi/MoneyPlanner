@@ -148,6 +148,8 @@ main {
   overflow-x: hidden;
   scrollbar-width: none;
   -ms-overflow-style: none;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
 }
 main::-webkit-scrollbar { display: none; }
 
@@ -221,11 +223,13 @@ input, select, textarea {
   background: var(--input-bg);
   color: var(--text-primary);
   font-family: inherit;
-  font-size: 15px;
+  font-size: 16px; /* ≥16px prevents iOS auto-zoom on focus */
   font-weight: 500;
   margin-bottom: 14px;
   outline: none;
   transition: border-color 0.15s ease, background 0.15s ease;
+  -webkit-appearance: none;
+  appearance: none;
 }
 
 input:focus, select:focus, textarea:focus {
@@ -252,10 +256,19 @@ input:focus, select:focus, textarea:focus {
   gap: 10px;
   transition: opacity 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease;
   box-shadow: var(--shadow-sm);
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  min-height: 56px;
 }
 
-.btn-primary:hover { box-shadow: var(--shadow-md); }
-.btn-primary:active { opacity: 0.92; transform: scale(0.985); }
+.btn-primary:active { opacity: 0.88; transform: scale(0.98); }
+
+/* Remove tap delay from all interactive elements */
+button, a, [role="button"] {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  cursor: pointer;
+}
 
 /* ─── Typography ─────────────────────────────────────────── */
 .text-h1 {
@@ -306,10 +319,10 @@ input:focus, select:focus, textarea:focus {
   width: 100%;
   max-width: 430px;
   border-radius: 28px 28px 0 0;
-  padding: 28px 24px 80px;
-  max-height: 90vh;
-  overflow-y: auto;
+  padding: 28px 24px calc(env(safe-area-inset-bottom, 24px) + 56px);
+  max-height: 92vh;
   border-top: 1px solid var(--glass-border);
+  overscroll-behavior: contain;
 }
 
 /* ─── Stat card ──────────────────────────────────────────── */
@@ -414,7 +427,7 @@ body.theme-transitioning * {
 ================================================================ */
 
 .screen-container {
-  padding: calc(env(safe-area-inset-top, 0px) + 20px) 20px 80px;
+  padding: calc(env(safe-area-inset-top, 0px) + 20px) 20px calc(env(safe-area-inset-bottom, 0px) + 100px);
   width: 100%;
 }
 

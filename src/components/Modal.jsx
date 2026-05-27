@@ -47,10 +47,7 @@ const Modal = ({ isOpen, onClose, title, children }) => {
                         transition={transition}
                         className="modal-content"
                         onClick={e => e.stopPropagation()}
-                        style={{
-                            overflowY: 'visible',
-                            willChange: 'transform'
-                        }}
+                        style={{ willChange: 'transform' }}
                     >
                         {/* Drag handle */}
                         <div style={{
@@ -77,20 +74,21 @@ const Modal = ({ isOpen, onClose, title, children }) => {
                                 onClick={onClose}
                                 aria-label="Close"
                                 style={{
-                                    width: '36px', height: '36px',
+                                    width: '44px', height: '44px',
                                     borderRadius: '14px',
                                     background: 'var(--badge-bg)',
                                     border: 'none',
                                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                                     cursor: 'pointer',
                                     color: 'var(--text-secondary)',
+                                    flexShrink: 0,
                                 }}
                             >
                                 <X size={18} />
                             </button>
                         </div>
 
-                        <div className="modal-body no-scrollbar" style={{ maxHeight: 'calc(90vh - 120px)', overflowY: 'auto' }}>
+                        <div className="modal-body no-scrollbar" style={{ maxHeight: 'calc(92vh - 120px)', overflowY: 'auto', overscrollBehavior: 'contain', WebkitOverflowScrolling: 'touch' }}>
                             {children}
                         </div>
                     </motion.div>

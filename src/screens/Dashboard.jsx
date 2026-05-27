@@ -114,7 +114,7 @@ const Dashboard = () => {
     }, [data.budgets, activeMonthTransactions, currentUser, selectedMonth]);
 
     return (
-        <div style={{ paddingBottom: '140px', paddingTop: 'calc(env(safe-area-inset-top, 40px) + 20px)' }}>
+        <div style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 120px)', paddingTop: 'calc(env(safe-area-inset-top, 40px) + 20px)' }}>
             <DashboardHeader />
 
             <BudgetAlerts budgetAlerts={budgetAlerts} />
