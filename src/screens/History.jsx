@@ -55,28 +55,31 @@ const TransactionRow = React.memo(({ t, getBankName, deleteTransaction, setEditi
                 onDragEnd={handleDragEnd}
                 onClick={() => { if (Math.abs(x.get()) < 5) setEditingTransaction(t); }}
             >
-                <div className="card" style={{ padding: '16px 18px', borderRadius: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid var(--glass-border)', cursor: 'pointer' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flex: 1 }}>
+                <div className="card" style={{ padding: '14px 16px', borderRadius: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid var(--glass-border)', cursor: 'pointer', marginBottom: 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1, minWidth: 0 }}>
                         <div style={{
-                            width: '44px', height: '44px', borderRadius: '14px', flexShrink: 0,
-                            background: t.type === 'income' ? 'rgba(52,199,89,0.1)' : 'rgba(255,59,48,0.1)',
-                            color: t.type === 'income' ? 'var(--accent-success)' : 'var(--accent-danger)',
+                            width: '42px', height: '42px', borderRadius: '14px', flexShrink: 0,
+                            background: t.type === 'income' ? 'var(--bento-mint)' : 'var(--bento-blush)',
+                            color: t.type === 'income' ? 'var(--bento-mint-ink)' : 'var(--bento-blush-ink)',
                             display: 'flex', alignItems: 'center', justifyContent: 'center'
                         }}>
-                            {t.type === 'income' ? <ArrowUpRight size={20} /> : <ArrowDownLeft size={20} />}
+                            {t.type === 'income' ? <ArrowUpRight size={20} strokeWidth={2.4} /> : <ArrowDownLeft size={20} strokeWidth={2.4} />}
                         </div>
                         <div style={{ flex: 1, minWidth: 0 }}>
-                            <div style={{ fontWeight: '800', fontSize: '15px', color: 'var(--text-primary)' }}>{t.category}</div>
+                            <div style={{ fontWeight: '700', fontSize: '14px', color: 'var(--text-primary)' }}>{t.category}</div>
                             <div style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: '600', marginTop: '2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                 {t.description || getBankName(t.bankId)}
                             </div>
                         </div>
                     </div>
-                    <div style={{ textAlign: 'right', display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
-                        <div style={{ fontWeight: '900', fontSize: '16px', color: t.type === 'income' ? 'var(--accent-success)' : 'var(--text-primary)' }}>
-                            {formatCurrency(t.amount)}
+                    <div style={{ textAlign: 'right', display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0, marginLeft: '8px' }}>
+                        <div style={{
+                            fontWeight: '800', fontSize: '15px', fontFamily: 'var(--font-display)',
+                            color: t.type === 'income' ? 'var(--bento-mint-ink)' : 'var(--text-primary)',
+                        }}>
+                            {t.type === 'income' ? '+' : '−'}{formatCurrency(t.amount)}
                         </div>
-                        <ChevronRight size={18} color="var(--text-secondary)" style={{ opacity: 0.3 }} />
+                        <ChevronRight size={16} color="var(--text-secondary)" style={{ opacity: 0.3 }} />
                     </div>
                 </div>
             </motion.div>
@@ -166,40 +169,41 @@ const History = () => {
 
     return (
         <div style={{ paddingBottom: '120px' }}>
-            <header style={{ padding: 'calc(env(safe-area-inset-top, 40px) + 20px) 20px 24px' }}>
-                <h1 style={{ fontSize: '36px', fontWeight: '900', letterSpacing: '-1.5px', margin: 0 }}>Activity</h1>
-                <p style={{ color: 'var(--text-secondary)', fontSize: '15px', fontWeight: '500' }}>Full Transaction Log</p>
+            <header style={{ padding: 'calc(env(safe-area-inset-top, 40px) + 20px) 20px 20px' }}>
+                <h1 style={{ fontSize: '34px', fontWeight: '900', letterSpacing: '-1.2px', margin: 0, fontFamily: 'var(--font-display)' }}>Activity</h1>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '13px', fontWeight: '600', marginTop: '2px', textTransform: 'uppercase', letterSpacing: '0.4px' }}>Transaction Log</p>
             </header>
 
             {/* Quick Chart */}
-            <div style={{ padding: '0 20px', marginBottom: '24px' }}>
-                <div className="card" style={{ padding: '24px', height: '220px', borderRadius: '32px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}>
-                        <h3 style={{ fontSize: '14px', fontWeight: '800', margin: 0 }}>Daily Volume</h3>
-                        <p style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: '600', textTransform: 'uppercase' }}>Last 10 Active Days</p>
+            <div style={{ padding: '0 20px', marginBottom: '20px' }}>
+                <div className="bento-card bento-blush" style={{ padding: '20px', height: '200px', borderRadius: '24px', marginBottom: 0 }}>
+                    <div className="flex-between" style={{ marginBottom: '14px' }}>
+                        <h3 style={{ fontSize: '11px', fontWeight: '700', margin: 0, color: 'var(--bento-blush-ink)', opacity: 0.75, textTransform: 'uppercase', letterSpacing: '0.6px' }}>Daily Volume</h3>
+                        <p style={{ fontSize: '11px', color: 'var(--bento-blush-ink)', fontWeight: '600', opacity: 0.6 }}>Last 10 days</p>
                     </div>
-                    <ResponsiveContainer width="100%" height="70%">
+                    <ResponsiveContainer width="100%" height="75%">
                         <AreaChart data={chartData} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
                             <defs>
                                 <linearGradient id="colorHistory" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor="var(--accent-primary)" stopOpacity={0.1} />
-                                    <stop offset="95%" stopColor="var(--accent-primary)" stopOpacity={0} />
+                                    <stop offset="5%" stopColor="var(--bento-blush-ink)" stopOpacity={0.3} />
+                                    <stop offset="95%" stopColor="var(--bento-blush-ink)" stopOpacity={0} />
                                 </linearGradient>
                             </defs>
                             <XAxis dataKey="date" hide />
                             <YAxis hide domain={['auto', 'auto']} />
-                            <Tooltip 
-                                contentStyle={{ background: 'var(--card-bg)', border: '1px solid var(--glass-border)', borderRadius: '12px' }}
-                                itemStyle={{ fontWeight: '800', fontSize: '13px' }}
+                            <Tooltip
+                                contentStyle={{ background: 'var(--card-bg)', border: '1px solid var(--glass-border)', borderRadius: '14px', boxShadow: 'var(--shadow-md)', padding: '10px 14px' }}
+                                itemStyle={{ fontWeight: '800', fontSize: '13px', color: 'var(--text-primary)' }}
+                                labelStyle={{ color: 'var(--text-secondary)', fontSize: '11px', fontWeight: '600' }}
                             />
-                            <Area 
-                                type="monotone" 
-                                dataKey="amount" 
-                                stroke="var(--accent-primary)" 
-                                strokeWidth={3} 
-                                fillOpacity={1} 
-                                fill="url(#colorHistory)" 
-                                animationDuration={1000}
+                            <Area
+                                type="monotone"
+                                dataKey="amount"
+                                stroke="var(--bento-blush-ink)"
+                                strokeWidth={3}
+                                fillOpacity={1}
+                                fill="url(#colorHistory)"
+                                animationDuration={800}
                             />
                         </AreaChart>
                     </ResponsiveContainer>
@@ -208,34 +212,44 @@ const History = () => {
 
             <div style={{ padding: '0 20px' }}>
                 {/* Search & Filter Bar */}
-                <div style={{ display: 'flex', gap: '12px', marginBottom: '24px' }}>
+                <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
                     <div style={{ flex: 1, position: 'relative' }}>
-                        <Search size={18} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)' }} />
-                        <input 
-                            type="text" 
-                            placeholder="Find an entry..." 
+                        <Search size={16} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)' }} />
+                        <input
+                            type="text"
+                            placeholder="Search entries..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            style={{ paddingLeft: '48px', height: '52px', borderRadius: '16px', fontSize: '15px' }}
+                            style={{ paddingLeft: '44px', height: '48px', borderRadius: '16px', fontSize: '14px', marginBottom: 0 }}
                         />
                     </div>
                     <motion.button
                         whileTap={{ scale: 0.95 }}
                         onClick={() => setIsFilterOpen(true)}
-                        style={{ height: '52px', width: '52px', background: 'var(--input-bg)', border: '1px solid var(--glass-border)', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-primary)', cursor: 'pointer' }}
+                        style={{ height: '48px', width: '48px', background: 'var(--bento-sky)', border: 'none', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--bento-sky-ink)', cursor: 'pointer', flexShrink: 0 }}
                     >
-                        <Filter size={18} />
+                        <Filter size={18} strokeWidth={2.4} />
                     </motion.button>
                 </div>
 
                 {/* List */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                     {sortedDates.map(date => (
                         <div key={date}>
-                            <h3 style={{ fontSize: '11px', fontWeight: '800', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                <Calendar size={12} /> {date}
-                            </h3>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
+                                <div style={{
+                                    display: 'inline-flex', alignItems: 'center', gap: '6px',
+                                    background: 'var(--badge-bg)',
+                                    padding: '5px 10px', borderRadius: '99px',
+                                }}>
+                                    <Calendar size={11} color="var(--text-secondary)" />
+                                    <span style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.6px' }}>
+                                        {date}
+                                    </span>
+                                </div>
+                                <div style={{ flex: 1, height: '1px', background: 'var(--glass-border)' }} />
+                            </div>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                                 {groupedTransactions[date].map((t, idx) => (
                                     <TransactionRow
                                         key={t.id}
@@ -279,7 +293,7 @@ const History = () => {
                                     syncWithSupabase();
                                 }
                             }}
-                            style={{ width: '100%', height: '52px', border: 'none', borderRadius: '16px', color: 'var(--accent-danger)', background: 'rgba(255,59,48,0.1)', fontWeight: '800', fontSize: '14px', cursor: 'pointer' }}
+                            style={{ width: '100%', height: '52px', border: 'none', borderRadius: '16px', color: 'var(--bento-blush-ink)', background: 'var(--bento-blush)', fontWeight: '800', fontSize: '14px', cursor: 'pointer' }}
                         >
                             Delete Record
                         </button>

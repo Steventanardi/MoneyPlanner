@@ -5,13 +5,20 @@ import { useStore } from '../../store/useStore';
 import Modal from '../Modal';
 import TransactionForm from '../TransactionForm';
 
-/* Map stat type to a Bento palette so the modal hero feels like the tile that opened it. */
 const TYPE_TINT = {
     Income:    { tint: 'var(--bento-mint)',   ink: 'var(--bento-mint-ink)' },
     Expenses:  { tint: 'var(--bento-blush)',  ink: 'var(--bento-blush-ink)' },
     Savings:   { tint: 'var(--bento-sky)',    ink: 'var(--bento-sky-ink)' },
     Emergency: { tint: 'var(--bento-butter)', ink: 'var(--bento-butter-ink)' },
 };
+
+const CAT_SWATCHES = [
+    { fill: 'var(--bento-peach)',    ink: 'var(--bento-peach-ink)' },
+    { fill: 'var(--bento-mint)',     ink: 'var(--bento-mint-ink)' },
+    { fill: 'var(--bento-lavender)', ink: 'var(--bento-lav-ink)' },
+    { fill: 'var(--bento-sky)',      ink: 'var(--bento-sky-ink)' },
+    { fill: 'var(--bento-blush)',    ink: 'var(--bento-blush-ink)' },
+];
 
 const StatModal = ({ statModal, onClose, topCategories, topIncomeCategories, activeMonthTransactions }) => {
     const { data, currentUser, formatCurrency, updateEmergencyFund } = useStore();
@@ -157,31 +164,40 @@ const StatModal = ({ statModal, onClose, topCategories, topIncomeCategories, act
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                         {(statModal?.type === 'Expenses' || statModal?.type === 'Income') && (
-                            (statModal.type === 'Expenses' ? topCategories : topIncomeCategories).map(cat => (
-                                <div
-                                    key={cat.name}
-                                    style={{
-                                        padding: '14px 18px',
-                                        borderRadius: '18px',
-                                        background: 'var(--badge-bg)',
-                                        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                                    }}
-                                >
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                            (statModal.type === 'Expenses' ? topCategories : topIncomeCategories).map((cat, idx) => {
+                                const sw = CAT_SWATCHES[idx % CAT_SWATCHES.length];
+                                return (
+                                    <div
+                                        key={cat.name}
+                                        style={{
+                                            padding: '12px 14px',
+                                            borderRadius: '16px',
+                                            background: sw.fill,
+                                            display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                                        }}
+                                    >
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                            <div style={{
+                                                width: '32px', height: '32px', borderRadius: '10px',
+                                                background: 'rgba(0,0,0,0.1)',
+                                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                fontSize: '12px', fontWeight: '800', color: sw.ink,
+                                                fontFamily: 'var(--font-display)',
+                                            }}>
+                                                {cat.name?.charAt(0)?.toUpperCase()}
+                                            </div>
+                                            <div style={{ fontWeight: '600', fontSize: '13px', color: sw.ink }}>{cat.name}</div>
+                                        </div>
                                         <div style={{
-                                            width: '10px', height: '10px', borderRadius: '50%',
-                                            backgroundColor: statModal.type === 'Expenses' ? 'var(--accent-danger)' : 'var(--accent-success)',
-                                        }} />
-                                        <div style={{ fontWeight: '600', fontSize: '14px' }}>{cat.name}</div>
+                                            fontWeight: '800', fontSize: '15px',
+                                            fontFamily: 'var(--font-display)',
+                                            color: sw.ink,
+                                        }}>
+                                            {formatCurrency(cat.value)}
+                                        </div>
                                     </div>
-                                    <div style={{
-                                        fontWeight: '700', fontSize: '15px',
-                                        fontFamily: 'var(--font-display)',
-                                    }}>
-                                        {formatCurrency(cat.value)}
-                                    </div>
-                                </div>
-                            ))
+                                );
+                            })
                         )}
 
                         {statModal?.type === 'Savings' && data.banks.filter(b => b.userId === currentUser?.id || b.isJoint).map(bank => (
@@ -240,29 +256,32 @@ const StatModal = ({ statModal, onClose, topCategories, topIncomeCategories, act
                                 {activeMonthTransactions
                                     .filter(t => (statModal?.type === 'Expenses' ? t.type === 'expense' : t.type === 'income'))
                                     .slice(0, 5)
-                                    .map(t => (
-                                        <div
-                                            key={t.id}
-                                            style={{
-                                                display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                                                padding: '12px 16px',
-                                                background: 'var(--badge-bg)',
-                                                borderRadius: '16px',
-                                            }}
-                                        >
-                                            <div>
-                                                <div style={{ fontWeight: '600', fontSize: '14px' }}>{t.description || t.category}</div>
-                                                <div style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: '500' }}>{t.category} • {t.date}</div>
+                                    .map(t => {
+                                        const isMint = t.type === 'income';
+                                        return (
+                                            <div
+                                                key={t.id}
+                                                style={{
+                                                    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                                                    padding: '12px 14px',
+                                                    background: isMint ? 'var(--bento-mint)' : 'var(--badge-bg)',
+                                                    borderRadius: '14px',
+                                                }}
+                                            >
+                                                <div>
+                                                    <div style={{ fontWeight: '600', fontSize: '13px', color: isMint ? 'var(--bento-mint-ink)' : 'var(--text-primary)' }}>{t.description || t.category}</div>
+                                                    <div style={{ fontSize: '11px', color: isMint ? 'var(--bento-mint-ink)' : 'var(--text-secondary)', opacity: 0.7, fontWeight: '500', marginTop: '1px' }}>{t.category} · {t.date}</div>
+                                                </div>
+                                                <div style={{
+                                                    fontWeight: '800', fontSize: '14px',
+                                                    fontFamily: 'var(--font-display)',
+                                                    color: isMint ? 'var(--bento-mint-ink)' : 'var(--text-primary)',
+                                                }}>
+                                                    {t.type === 'income' ? '+' : '−'}{formatCurrency(t.amount)}
+                                                </div>
                                             </div>
-                                            <div style={{
-                                                fontWeight: '700', fontSize: '14px',
-                                                fontFamily: 'var(--font-display)',
-                                                color: t.type === 'income' ? 'var(--accent-success)' : 'var(--text-primary)',
-                                            }}>
-                                                {t.type === 'income' ? '+' : '−'}{formatCurrency(t.amount)}
-                                            </div>
-                                        </div>
-                                    ))}
+                                        );
+                                    })}
                                 {activeMonthTransactions.filter(t => (statModal?.type === 'Expenses' ? t.type === 'expense' : t.type === 'income')).length === 0 && (
                                     <div style={{ textAlign: 'center', padding: '28px', opacity: 0.5, fontSize: '13px' }}>No transactions recorded for this month</div>
                                 )}

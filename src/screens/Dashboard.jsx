@@ -120,7 +120,7 @@ const Dashboard = () => {
             <BudgetAlerts budgetAlerts={budgetAlerts} />
 
             <div style={{ padding: '0 20px' }}>
-                <BalanceCard balance={balance} expenseDelta={expenseDelta} expense={expense} />
+                <BalanceCard balance={balance} expenseDelta={expenseDelta} expense={expense} income={income} />
 
                 <BudgetRing expense={expense} />
 

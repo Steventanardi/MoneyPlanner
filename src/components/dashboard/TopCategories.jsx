@@ -16,49 +16,67 @@ const TopCategories = ({ topCategories, expense }) => {
     if (!topCategories.length) return null;
 
     return (
-        <div className="card" style={{ padding: '22px', borderRadius: '24px', background: 'var(--card-bg)' }}>
-            <h3 className="text-caption" style={{ marginBottom: '18px' }}>Top categories</h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+        <div style={{
+            padding: '22px',
+            borderRadius: '24px',
+            background: 'var(--card-bg)',
+            border: '1px solid var(--glass-border)',
+            boxShadow: 'var(--shadow-sm)',
+            marginBottom: '12px',
+        }}>
+            <div className="flex-between" style={{ marginBottom: '18px' }}>
+                <h3 className="text-caption">Top categories</h3>
+                <span className="text-caption">{topCategories.length} active</span>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
                 {topCategories.map((cat, idx) => {
                     const percentage = Math.round((cat.value / expense) * 100);
                     const swatch = SWATCHES[idx % SWATCHES.length];
                     return (
                         <div key={cat.name} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                             <div style={{
-                                width: '34px', height: '34px',
-                                borderRadius: '11px',
+                                width: '38px', height: '38px',
+                                borderRadius: '13px',
                                 background: swatch.fill,
                                 color: swatch.ink,
                                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                fontSize: '11px', fontWeight: '800',
+                                fontSize: '13px', fontWeight: '800',
+                                fontFamily: 'var(--font-display)',
                                 flexShrink: 0,
                             }}>
                                 {cat.name?.charAt(0)?.toUpperCase()}
                             </div>
                             <div style={{ flex: 1, minWidth: 0 }}>
-                                <div style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-primary)' }}>{cat.name}</div>
+                                <div className="flex-between" style={{ marginBottom: '5px' }}>
+                                    <span style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-primary)' }}>{cat.name}</span>
+                                    <span style={{
+                                        fontSize: '12px', fontWeight: '700',
+                                        color: swatch.ink,
+                                        background: swatch.fill,
+                                        padding: '2px 8px',
+                                        borderRadius: '99px',
+                                        fontFamily: 'var(--font-display)',
+                                    }}>
+                                        {percentage}%
+                                    </span>
+                                </div>
                                 <div style={{
-                                    marginTop: '4px',
-                                    height: '6px',
+                                    height: '8px',
                                     background: 'var(--badge-bg)',
-                                    borderRadius: '3px',
+                                    borderRadius: '4px',
                                     overflow: 'hidden',
                                 }}>
                                     <div style={{
                                         width: `${percentage}%`,
                                         height: '100%',
                                         background: swatch.fill,
-                                        borderRadius: '3px',
+                                        borderRadius: '4px',
+                                        transition: 'width 0.6s cubic-bezier(0.25, 1, 0.5, 1)',
                                     }} />
                                 </div>
-                            </div>
-                            <div style={{
-                                fontSize: '13px', fontWeight: '700',
-                                color: 'var(--text-primary)',
-                                fontFamily: 'var(--font-display)',
-                                minWidth: '34px', textAlign: 'right',
-                            }}>
-                                {percentage}%
+                                <div style={{ fontSize: '11px', fontWeight: '600', color: 'var(--text-secondary)', marginTop: '3px' }}>
+                                    {formatCurrency(cat.value)}
+                                </div>
                             </div>
                         </div>
                     );

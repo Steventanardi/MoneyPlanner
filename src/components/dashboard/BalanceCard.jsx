@@ -1,8 +1,8 @@
 import React from 'react';
-import { Clock, Sparkles } from 'lucide-react';
+import { Sparkles, ArrowUpRight, ArrowDownLeft } from 'lucide-react';
 import { useStore } from '../../store/useStore';
 
-const BalanceCard = ({ balance, expenseDelta, expense }) => {
+const BalanceCard = ({ balance, expenseDelta, expense, income }) => {
     const { formatCurrency, exchangeRate } = useStore();
 
     return (
@@ -45,16 +45,34 @@ const BalanceCard = ({ balance, expenseDelta, expense }) => {
                 )}
             </div>
 
-            <div className="flex-between" style={{
-                paddingTop: '4px',
-                borderTop: '1px solid rgba(107, 63, 26, 0.18)',
-            }}>
-                <span style={{ fontSize: '12px', fontWeight: '600', color: 'var(--bento-peach-ink)', opacity: 0.75 }}>
-                    Money you can move
-                </span>
-                <span className="bento-chip" style={{ color: 'var(--bento-peach-ink)', background: 'rgba(107, 63, 26, 0.12)' }}>
-                    <Sparkles size={12} /> Safe to spend
-                </span>
+            <div style={{ paddingTop: '14px', borderTop: '1px solid rgba(107, 63, 26, 0.18)', display: 'flex', gap: '10px' }}>
+                <div style={{
+                    flex: 1, background: 'rgba(107, 63, 26, 0.10)',
+                    borderRadius: '14px', padding: '10px 14px',
+                    display: 'flex', alignItems: 'center', gap: '8px',
+                }}>
+                    <ArrowUpRight size={14} color="var(--bento-peach-ink)" strokeWidth={2.6} />
+                    <div>
+                        <div style={{ fontSize: '10px', fontWeight: '700', color: 'var(--bento-peach-ink)', opacity: 0.65, textTransform: 'uppercase', letterSpacing: '0.4px' }}>In</div>
+                        <div style={{ fontSize: '14px', fontWeight: '800', color: 'var(--bento-peach-ink)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>{formatCurrency(income ?? 0)}</div>
+                    </div>
+                </div>
+                <div style={{
+                    flex: 1, background: 'rgba(107, 63, 26, 0.10)',
+                    borderRadius: '14px', padding: '10px 14px',
+                    display: 'flex', alignItems: 'center', gap: '8px',
+                }}>
+                    <ArrowDownLeft size={14} color="var(--bento-peach-ink)" strokeWidth={2.6} />
+                    <div>
+                        <div style={{ fontSize: '10px', fontWeight: '700', color: 'var(--bento-peach-ink)', opacity: 0.65, textTransform: 'uppercase', letterSpacing: '0.4px' }}>Out</div>
+                        <div style={{ fontSize: '14px', fontWeight: '800', color: 'var(--bento-peach-ink)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>{formatCurrency(expense)}</div>
+                    </div>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <span className="bento-chip" style={{ color: 'var(--bento-peach-ink)', background: 'rgba(107, 63, 26, 0.10)', whiteSpace: 'nowrap' }}>
+                        <Sparkles size={11} /> Safe
+                    </span>
+                </div>
             </div>
         </div>
     );

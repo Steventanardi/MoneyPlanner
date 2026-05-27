@@ -157,13 +157,14 @@ main::-webkit-scrollbar { display: none; }
   border-radius: var(--border-radius-lg);
   padding: 20px;
   border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow-sm);
   margin-bottom: 12px;
   position: relative;
   overflow: hidden;
   transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
-.card:hover { box-shadow: var(--shadow-sm); }
+.card:hover { box-shadow: var(--shadow-md); }
 
 .glass-card {
   background: var(--card-bg);
@@ -351,6 +352,31 @@ input:focus, select:focus, textarea:focus {
   height: 1px;
   background: var(--glass-border);
   margin: 16px 0;
+}
+
+/* Section label with bento chip feel */
+.section-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+/* Input group wrapper */
+.input-group { margin-bottom: 16px; }
+.input-group label {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
 }
 
 /* ─── Scrollbar ──────────────────────────────────────────── */
