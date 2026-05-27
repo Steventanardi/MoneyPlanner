@@ -138,14 +138,14 @@ const App = () => {
                     <AnimatePresence mode="wait">
                         <motion.div
                             key={activeScreen}
-                            initial={{ opacity: 0, scale: 0.98, y: 12 }}
-                            animate={{ opacity: 1, scale: 1, y: 0 }}
-                            exit={{ opacity: 0, scale: 1.02, y: -12 }}
+                            initial={{ opacity: 0, y: 6 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0 }}
                             transition={{
-                                duration: 0.35,
-                                ease: [0.23, 1, 0.32, 1]
+                                duration: 0.14,
+                                ease: 'easeOut'
                             }}
-                            style={{ width: '100%', height: '100%' }}
+                            style={{ width: '100%' }}
                         >
                             {renderScreen()}
                         </motion.div>

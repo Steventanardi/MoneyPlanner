@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Home, Calendar, Package, Wallet, CreditCard, Coins, Settings as SettingsIcon, Sun, Moon, Clock, ChevronUp } from 'lucide-react';
+import React from 'react';
+import { Home, Calendar, Package, Wallet, CreditCard, Coins, Settings as SettingsIcon, Sun, Moon, Clock } from 'lucide-react';
 import { useStore } from '../store/useStore';
 import useResponsive from '../hooks/useResponsive';
 
@@ -120,126 +120,77 @@ const Sidebar = ({ activeScreen, setActiveScreen, currentUser, theme, toggleThem
   );
 };
 
-/* ── Mobile: floating pill + bottom sheet ────────────────── */
-const BottomNav = ({ activeScreen, setActiveScreen, currentUser }) => {
-  const accent = currentUser?.color || 'var(--accent-primary)';
-  const [isOpen, setIsOpen] = useState(false);
-
-  const activeItem = NAV_ITEMS.find(i => i.id === activeScreen) || NAV_ITEMS[0];
-  const ActiveIcon = activeItem.icon;
-
-  const handleNav = (id) => {
-    setActiveScreen(id);
-    setIsOpen(false);
-  };
-
+/* ── Mobile: iOS-style persistent tab bar ────────────────── */
+const TabBar = ({ activeScreen, setActiveScreen }) => {
   return (
-    <>
-      {/* Backdrop — tap to close */}
-      {isOpen && (
-        <div
-          onClick={() => setIsOpen(false)}
-          style={{
-            position: 'fixed', inset: 0, zIndex: 998,
-            background: 'rgba(43, 31, 18, 0.42)',
-            backdropFilter: 'blur(4px)',
-          }}
-        />
-      )}
-
-      {/* Bottom sheet (always rendered for smooth slide transition) */}
-      <div style={{
-        position: 'fixed', bottom: 0, left: 0, right: 0,
-        zIndex: 999,
-        background: 'var(--card-bg)',
-        borderRadius: '28px 28px 0 0',
-        border: '1px solid var(--glass-border)',
-        borderBottom: 'none',
-        padding: '14px 16px',
-        paddingBottom: 'calc(24px + env(safe-area-inset-bottom, 0px))',
-        transform: isOpen ? 'translateY(0)' : 'translateY(100%)',
-        transition: 'transform 0.32s cubic-bezier(0.23, 1, 0.32, 1)',
-        boxShadow: '0 -16px 48px rgba(64, 40, 20, 0.18)',
-        willChange: 'transform',
-      }}>
-        {/* Drag handle */}
-        <div style={{
-          width: '44px', height: '5px',
-          background: 'var(--glass-border)',
-          borderRadius: '3px', margin: '0 auto 18px',
-        }} />
-
-        {/* Nav grid — 4 per row, pastel pill per item */}
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', justifyContent: 'center' }}>
-          {NAV_ITEMS.map(item => {
-            const Icon = item.icon;
-            const isActive = activeScreen === item.id;
-            return (
-              <button
-                key={item.id}
-                onClick={() => handleNav(item.id)}
-                style={{
-                  width: 'calc(25% - 8px)',
-                  display: 'flex', flexDirection: 'column', alignItems: 'center',
-                  gap: '8px', padding: '18px 6px',
-                  borderRadius: '20px',
-                  background: isActive ? item.tint : 'var(--badge-bg)',
-                  border: 'none',
-                  cursor: 'pointer',
-                  transition: 'background 0.15s ease, transform 0.1s ease',
-                  minWidth: 0,
-                }}
-              >
-                <Icon
-                  size={24}
-                  strokeWidth={isActive ? 2.4 : 2}
-                  color={isActive ? item.ink : 'var(--text-secondary)'}
-                />
-                <span style={{
-                  fontSize: '11px', fontWeight: isActive ? '700' : '600',
-                  color: isActive ? item.ink : 'var(--text-secondary)',
-                  letterSpacing: '0.1px',
-                  lineHeight: 1,
-                }}>
-                  {item.label}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Floating pill trigger — pastel-tinted to the active section */}
-      <button
-        onClick={() => setIsOpen(v => !v)}
-        style={{
-          position: 'fixed',
-          bottom: `calc(16px + env(safe-area-inset-bottom, 0px))`,
-          left: '50%',
-          transform: 'translateX(-50%)',
-          zIndex: 1000,
-          display: 'flex', alignItems: 'center', gap: '10px',
-          padding: '14px 26px',
-          background: activeItem.tint,
-          border: 'none',
-          borderRadius: '100px',
-          cursor: 'pointer',
-          boxShadow: '0 8px 28px rgba(64, 40, 20, 0.22)',
-          opacity: isOpen ? 0 : 1,
-          pointerEvents: isOpen ? 'none' : 'auto',
-          transition: 'opacity 0.2s ease',
-          whiteSpace: 'nowrap',
-          minHeight: '52px',
-          WebkitTapHighlightColor: 'transparent',
-        }}
-      >
-        <ActiveIcon size={16} strokeWidth={2.4} color={activeItem.ink} />
-        <span style={{ fontSize: '13px', fontWeight: '700', color: activeItem.ink, fontFamily: 'var(--font-display)' }}>
-          {activeItem.label}
-        </span>
-        <ChevronUp size={14} color={activeItem.ink} strokeWidth={2.4} />
-      </button>
-    </>
+    <nav style={{
+      position: 'fixed',
+      bottom: 0, left: 0, right: 0,
+      zIndex: 1000,
+      display: 'flex',
+      background: 'var(--nav-bg-blur)',
+      backdropFilter: 'blur(24px)',
+      WebkitBackdropFilter: 'blur(24px)',
+      borderTop: '0.5px solid var(--glass-border)',
+      paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+      willChange: 'transform',
+    }}>
+      {NAV_ITEMS.map(item => {
+        const Icon = item.icon;
+        const isActive = activeScreen === item.id;
+        return (
+          <button
+            key={item.id}
+            onClick={() => setActiveScreen(item.id)}
+            style={{
+              flex: 1,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '3px',
+              paddingTop: '9px',
+              paddingBottom: '7px',
+              minHeight: '49px',
+              border: 'none',
+              background: 'transparent',
+              cursor: 'pointer',
+              touchAction: 'manipulation',
+              userSelect: 'none',
+              WebkitUserSelect: 'none',
+              WebkitTapHighlightColor: 'transparent',
+            }}
+          >
+            <div style={{
+              width: '32px',
+              height: '32px',
+              borderRadius: '9px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              background: isActive ? item.tint : 'transparent',
+              transition: 'background 0.12s ease',
+            }}>
+              <Icon
+                size={18}
+                strokeWidth={isActive ? 2.5 : 2}
+                color={isActive ? item.ink : 'var(--text-secondary)'}
+              />
+            </div>
+            <span style={{
+              fontSize: '9px',
+              fontWeight: isActive ? '700' : '500',
+              color: isActive ? item.ink : 'var(--text-secondary)',
+              lineHeight: 1,
+              letterSpacing: '0.1px',
+              whiteSpace: 'nowrap',
+            }}>
+              {item.label}
+            </span>
+          </button>
+        );
+      })}
+    </nav>
   );
 };
 
@@ -250,7 +201,7 @@ const Navigation = () => {
 
   return isDesktop
     ? <Sidebar activeScreen={activeScreen} setActiveScreen={setActiveScreen} currentUser={currentUser} theme={theme} toggleTheme={toggleTheme} />
-    : <BottomNav activeScreen={activeScreen} setActiveScreen={setActiveScreen} currentUser={currentUser} />;
+    : <TabBar activeScreen={activeScreen} setActiveScreen={setActiveScreen} />;
 };
 
 export default Navigation;

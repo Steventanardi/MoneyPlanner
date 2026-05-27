@@ -52,6 +52,9 @@
   --bento-butter:   #FBE7A9;   /* alerts / pending */
   --bento-butter-ink:#5C3F00;
 
+  /* ── Tab bar frosted glass ── */
+  --nav-bg-blur: rgba(255, 251, 245, 0.92);
+
   /* ── Radius — chunky and friendly ── */
   --border-radius-sm:   12px;
   --border-radius-md:   18px;   /* "the" Bento corner */
@@ -110,6 +113,8 @@
   --shadow-md: 0 6px 18px rgba(0, 0, 0, 0.40);
   --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.50);
 
+  --nav-bg-blur: rgba(38, 29, 23, 0.92);
+
   color-scheme: dark;
 }
 
@@ -125,17 +130,21 @@ body {
   background-color: var(--bg-color);
   color: var(--text-primary);
   min-height: 100vh;
+  min-height: 100dvh;
   overflow-x: hidden;
   line-height: 1.5;
   overscroll-behavior-y: contain;
   transition: background-color 0.25s ease, color 0.25s ease;
+  -webkit-text-size-adjust: 100%;
 }
 
 /* ─── App container ─────────────────────────────────────── */
 .iphone-container {
+  width: 100%;
   max-width: 430px;
   margin: 0 auto;
   min-height: 100vh;
+  min-height: 100dvh;
   background-color: var(--bg-color);
   position: relative;
   display: flex;
@@ -144,6 +153,7 @@ body {
 
 main {
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
   overflow-x: hidden;
   scrollbar-width: none;
@@ -268,6 +278,13 @@ button, a, [role="button"] {
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
   cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Immediate press feedback — makes taps feel instant */
+button:active, [role="button"]:active {
+  opacity: 0.75;
 }
 
 /* ─── Typography ─────────────────────────────────────────── */
@@ -427,7 +444,7 @@ body.theme-transitioning * {
 ================================================================ */
 
 .screen-container {
-  padding: calc(env(safe-area-inset-top, 0px) + 20px) 20px calc(env(safe-area-inset-bottom, 0px) + 100px);
+  padding: calc(env(safe-area-inset-top, 0px) + 20px) 20px calc(env(safe-area-inset-bottom, 0px) + 74px);
   width: 100%;
 }
 
