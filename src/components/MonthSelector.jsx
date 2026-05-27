@@ -5,7 +5,6 @@ import useStore from '../store/useStore';
 const MonthSelector = () => {
     const { selectedMonth, setSelectedMonth } = useStore();
 
-    // Generate last 6 months for a scrollable select experience
     const months = Array.from({ length: 6 }, (_, i) => {
         const d = new Date();
         d.setMonth(d.getMonth() - i);
@@ -16,15 +15,18 @@ const MonthSelector = () => {
     }).reverse();
 
     return (
-        <div style={{ 
-            display: 'flex', 
-            gap: '8px', 
-            overflowX: 'auto', 
-            padding: '4px 20px 20px',
-            scrollbarWidth: 'none',
-            msOverflowStyle: 'none',
-            maskImage: 'linear-gradient(to right, transparent, black 15%, black 85%, transparent)'
-        }} className="no-scrollbar">
+        <div
+            className="no-scrollbar"
+            style={{
+                display: 'flex',
+                gap: '8px',
+                overflowX: 'auto',
+                padding: '4px 20px 18px',
+                scrollbarWidth: 'none',
+                msOverflowStyle: 'none',
+                maskImage: 'linear-gradient(to right, transparent, black 12%, black 88%, transparent)',
+            }}
+        >
             {months.map(({ value, label }) => {
                 const isActive = selectedMonth === value;
                 return (
@@ -33,16 +35,18 @@ const MonthSelector = () => {
                         onClick={() => setSelectedMonth(value)}
                         style={{
                             position: 'relative',
-                            padding: '10px 20px',
+                            padding: '10px 18px',
                             background: 'transparent',
                             border: 'none',
-                            color: isActive ? 'white' : 'var(--text-secondary)',
+                            color: isActive ? 'var(--bento-peach-ink)' : 'var(--text-secondary)',
                             fontSize: '13px',
-                            fontWeight: '700',
+                            fontWeight: isActive ? '700' : '600',
                             whiteSpace: 'nowrap',
                             cursor: 'pointer',
                             transition: 'color 0.2s ease',
                             borderRadius: '16px',
+                            fontFamily: 'var(--font-display)',
+                            letterSpacing: '-0.1px',
                         }}
                     >
                         {isActive && (
@@ -51,10 +55,9 @@ const MonthSelector = () => {
                                 style={{
                                     position: 'absolute',
                                     inset: 0,
-                                    background: 'var(--accent-primary)',
+                                    background: 'var(--bento-peach)',
                                     borderRadius: '16px',
                                     zIndex: -1,
-                                    boxShadow: '0 4px 12px var(--accent-primary-glow)'
                                 }}
                                 transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
                             />

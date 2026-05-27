@@ -3,14 +3,15 @@ import { Home, Calendar, Package, Wallet, CreditCard, Coins, Settings as Setting
 import { useStore } from '../store/useStore';
 import useResponsive from '../hooks/useResponsive';
 
+/* Each nav item gets a paired pastel fill for its active state. */
 const NAV_ITEMS = [
-  { id: 'dashboard', label: 'Home',    icon: Home         },
-  { id: 'monthly',   label: 'Planner', icon: Calendar     },
-  { id: 'recurring', label: 'Bills',   icon: CreditCard   },
-  { id: 'inventory', label: 'Stock',   icon: Package      },
-  { id: 'banks',     label: 'Vault',   icon: Wallet       },
-  { id: 'history',   label: 'History', icon: Clock        },
-  { id: 'settings',  label: 'Account', icon: SettingsIcon },
+  { id: 'dashboard', label: 'Home',    icon: Home,         tint: 'var(--bento-peach)',    ink: 'var(--bento-peach-ink)' },
+  { id: 'monthly',   label: 'Planner', icon: Calendar,     tint: 'var(--bento-lavender)', ink: 'var(--bento-lav-ink)' },
+  { id: 'recurring', label: 'Bills',   icon: CreditCard,   tint: 'var(--bento-butter)',   ink: 'var(--bento-butter-ink)' },
+  { id: 'inventory', label: 'Stock',   icon: Package,      tint: 'var(--bento-mint)',     ink: 'var(--bento-mint-ink)' },
+  { id: 'banks',     label: 'Vault',   icon: Wallet,       tint: 'var(--bento-sky)',      ink: 'var(--bento-sky-ink)' },
+  { id: 'history',   label: 'History', icon: Clock,        tint: 'var(--bento-blush)',    ink: 'var(--bento-blush-ink)' },
+  { id: 'settings',  label: 'Account', icon: SettingsIcon, tint: 'var(--badge-bg)',       ink: 'var(--text-primary)' },
 ];
 
 /* ── Desktop sidebar ─────────────────────────────────────── */
@@ -23,28 +24,29 @@ const Sidebar = ({ activeScreen, setActiveScreen, currentUser, theme, toggleThem
       background: 'var(--nav-bg)',
       borderRight: '1px solid var(--glass-border)',
       display: 'flex', flexDirection: 'column',
-      padding: '32px 14px 28px',
+      padding: '28px 16px 24px',
       zIndex: 1000,
     }}>
 
       {/* Logo */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '11px', padding: '4px 10px', marginBottom: '36px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '4px 8px', marginBottom: '32px' }}>
         <div style={{
-          width: '34px', height: '34px', borderRadius: '9px',
-          background: accent, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0
+          width: '40px', height: '40px', borderRadius: '14px',
+          background: 'var(--bento-peach)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
         }}>
-          <Coins size={18} color="white" strokeWidth={2.5} />
+          <Coins size={20} color="var(--bento-peach-ink)" strokeWidth={2.4} />
         </div>
         <div>
-          <div style={{ fontFamily: 'var(--font-display)', fontWeight: '900', fontSize: '15px', letterSpacing: '-0.3px', lineHeight: 1.1 }}>
-            Money<span style={{ color: accent }}>.</span>
+          <div style={{ fontFamily: 'var(--font-display)', fontWeight: '800', fontSize: '17px', letterSpacing: '-0.4px', lineHeight: 1.05, color: 'var(--text-primary)' }}>
+            Ruflo
           </div>
-          <div style={{ fontSize: '9px', fontWeight: '700', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.6px' }}>Planner</div>
+          <div style={{ fontSize: '10px', fontWeight: '600', color: 'var(--text-secondary)', letterSpacing: '0.4px' }}>Money planner</div>
         </div>
       </div>
 
       {/* Nav items */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '1px', flex: 1 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', flex: 1 }}>
         {NAV_ITEMS.map(item => {
           const Icon = item.icon;
           const isActive = activeScreen === item.id;
@@ -54,21 +56,21 @@ const Sidebar = ({ activeScreen, setActiveScreen, currentUser, theme, toggleThem
               onClick={() => setActiveScreen(item.id)}
               style={{
                 display: 'flex', alignItems: 'center', gap: '12px',
-                padding: '11px 12px', borderRadius: '9px', width: '100%',
-                background: isActive ? `${accent}12` : 'transparent',
+                padding: '12px 14px', borderRadius: '14px', width: '100%',
+                background: isActive ? item.tint : 'transparent',
                 border: 'none', cursor: 'pointer', textAlign: 'left',
-                borderLeft: isActive ? `3px solid ${accent}` : '3px solid transparent',
-                transition: 'background 0.12s ease, border-color 0.12s ease'
+                transition: 'background 0.18s ease',
               }}
             >
               <Icon
-                size={17} strokeWidth={isActive ? 2.5 : 2}
-                color={isActive ? accent : 'var(--text-secondary)'}
+                size={18}
+                strokeWidth={isActive ? 2.4 : 2}
+                color={isActive ? item.ink : 'var(--text-secondary)'}
               />
               <span style={{
                 fontSize: '14px',
                 fontWeight: isActive ? '700' : '500',
-                color: isActive ? accent : 'var(--text-secondary)',
+                color: isActive ? item.ink : 'var(--text-secondary)',
               }}>
                 {item.label}
               </span>
@@ -81,19 +83,19 @@ const Sidebar = ({ activeScreen, setActiveScreen, currentUser, theme, toggleThem
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
         <div style={{
           flex: 1, display: 'flex', alignItems: 'center', gap: '10px',
-          padding: '11px 12px', borderRadius: '9px',
-          border: '1px solid var(--glass-border)',
+          padding: '10px 12px', borderRadius: '14px',
+          background: 'var(--badge-bg)',
         }}>
           <div style={{
-            width: '30px', height: '30px', borderRadius: '8px', flexShrink: 0,
-            background: `${accent}15`, color: accent,
+            width: '32px', height: '32px', borderRadius: '10px', flexShrink: 0,
+            background: accent, color: '#FFFBF5',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontWeight: '800', fontSize: '13px'
+            fontWeight: '800', fontSize: '13px', fontFamily: 'var(--font-display)',
           }}>
-            {currentUser?.avatar || 'S'}
+            {currentUser?.avatar || currentUser?.name?.charAt(0) || 'S'}
           </div>
           <div style={{ minWidth: 0 }}>
-            <div style={{ fontWeight: '700', fontSize: '13px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            <div style={{ fontWeight: '700', fontSize: '13px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: 'var(--text-primary)' }}>
               {currentUser?.name}
             </div>
             <div style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: '500' }}>
@@ -103,14 +105,15 @@ const Sidebar = ({ activeScreen, setActiveScreen, currentUser, theme, toggleThem
         </div>
         <button
           onClick={toggleTheme}
+          aria-label="Toggle theme"
           style={{
-            width: '38px', height: '38px', borderRadius: '9px', flexShrink: 0,
-            background: 'var(--input-bg)', border: '1px solid var(--glass-border)',
+            width: '40px', height: '40px', borderRadius: '14px', flexShrink: 0,
+            background: 'var(--badge-bg)', border: 'none',
             cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-            color: 'var(--text-secondary)', transition: 'background 0.15s ease'
+            color: 'var(--text-secondary)', transition: 'background 0.15s ease',
           }}
         >
-          {theme === 'dark' ? <Sun size={15} /> : <Moon size={15} />}
+          {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
         </button>
       </div>
     </nav>
@@ -138,7 +141,7 @@ const BottomNav = ({ activeScreen, setActiveScreen, currentUser }) => {
           onClick={() => setIsOpen(false)}
           style={{
             position: 'fixed', inset: 0, zIndex: 998,
-            background: 'rgba(0,0,0,0.45)',
+            background: 'rgba(43, 31, 18, 0.42)',
             backdropFilter: 'blur(4px)',
           }}
         />
@@ -149,24 +152,24 @@ const BottomNav = ({ activeScreen, setActiveScreen, currentUser }) => {
         position: 'fixed', bottom: 0, left: 0, right: 0,
         zIndex: 999,
         background: 'var(--card-bg)',
-        borderRadius: '24px 24px 0 0',
+        borderRadius: '28px 28px 0 0',
         border: '1px solid var(--glass-border)',
         borderBottom: 'none',
         padding: '14px 16px',
         paddingBottom: 'calc(24px + env(safe-area-inset-bottom, 0px))',
         transform: isOpen ? 'translateY(0)' : 'translateY(100%)',
         transition: 'transform 0.32s cubic-bezier(0.23, 1, 0.32, 1)',
-        boxShadow: '0 -12px 48px rgba(0,0,0,0.25)',
+        boxShadow: '0 -16px 48px rgba(64, 40, 20, 0.18)',
         willChange: 'transform',
       }}>
         {/* Drag handle */}
         <div style={{
-          width: '40px', height: '4px',
+          width: '44px', height: '5px',
           background: 'var(--glass-border)',
-          borderRadius: '2px', margin: '0 auto 18px',
+          borderRadius: '3px', margin: '0 auto 18px',
         }} />
 
-        {/* Nav grid — 4 per row, last 3 centered */}
+        {/* Nav grid — 4 per row, pastel pill per item */}
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', justifyContent: 'center' }}>
           {NAV_ITEMS.map(item => {
             const Icon = item.icon;
@@ -179,23 +182,23 @@ const BottomNav = ({ activeScreen, setActiveScreen, currentUser }) => {
                   width: 'calc(25% - 8px)',
                   display: 'flex', flexDirection: 'column', alignItems: 'center',
                   gap: '8px', padding: '18px 6px',
-                  borderRadius: '16px',
-                  background: isActive ? `${accent}15` : 'var(--input-bg)',
-                  border: `2px solid ${isActive ? accent : 'transparent'}`,
+                  borderRadius: '20px',
+                  background: isActive ? item.tint : 'var(--badge-bg)',
+                  border: 'none',
                   cursor: 'pointer',
-                  transition: 'background 0.15s ease, border-color 0.15s ease',
+                  transition: 'background 0.15s ease, transform 0.1s ease',
                   minWidth: 0,
                 }}
               >
                 <Icon
-                  size={26}
-                  strokeWidth={isActive ? 2.5 : 2}
-                  color={isActive ? accent : 'var(--text-secondary)'}
+                  size={24}
+                  strokeWidth={isActive ? 2.4 : 2}
+                  color={isActive ? item.ink : 'var(--text-secondary)'}
                 />
                 <span style={{
-                  fontSize: '11px', fontWeight: isActive ? '800' : '600',
-                  color: isActive ? accent : 'var(--text-secondary)',
-                  textTransform: 'uppercase', letterSpacing: '0.2px',
+                  fontSize: '11px', fontWeight: isActive ? '700' : '600',
+                  color: isActive ? item.ink : 'var(--text-secondary)',
+                  letterSpacing: '0.1px',
                   lineHeight: 1,
                 }}>
                   {item.label}
@@ -206,7 +209,7 @@ const BottomNav = ({ activeScreen, setActiveScreen, currentUser }) => {
         </div>
       </div>
 
-      {/* Floating pill trigger — small footprint, doesn't block content */}
+      {/* Floating pill trigger — pastel-tinted to the active section */}
       <button
         onClick={() => setIsOpen(v => !v)}
         style={{
@@ -215,24 +218,24 @@ const BottomNav = ({ activeScreen, setActiveScreen, currentUser }) => {
           left: '50%',
           transform: 'translateX(-50%)',
           zIndex: 1000,
-          display: 'flex', alignItems: 'center', gap: '8px',
-          padding: '11px 20px',
-          background: 'var(--card-bg)',
-          border: '1px solid var(--glass-border)',
+          display: 'flex', alignItems: 'center', gap: '10px',
+          padding: '12px 22px',
+          background: activeItem.tint,
+          border: 'none',
           borderRadius: '100px',
           cursor: 'pointer',
-          boxShadow: '0 4px 24px rgba(0,0,0,0.18)',
+          boxShadow: '0 8px 28px rgba(64, 40, 20, 0.22)',
           opacity: isOpen ? 0 : 1,
           pointerEvents: isOpen ? 'none' : 'auto',
-          transition: 'opacity 0.2s ease',
+          transition: 'opacity 0.2s ease, transform 0.1s ease',
           whiteSpace: 'nowrap',
         }}
       >
-        <ActiveIcon size={16} strokeWidth={2.5} color={accent} />
-        <span style={{ fontSize: '13px', fontWeight: '800', color: 'var(--text-primary)' }}>
+        <ActiveIcon size={16} strokeWidth={2.4} color={activeItem.ink} />
+        <span style={{ fontSize: '13px', fontWeight: '700', color: activeItem.ink, fontFamily: 'var(--font-display)' }}>
           {activeItem.label}
         </span>
-        <ChevronUp size={14} color="var(--text-secondary)" strokeWidth={2.5} />
+        <ChevronUp size={14} color={activeItem.ink} strokeWidth={2.4} />
       </button>
     </>
   );

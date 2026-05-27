@@ -90,42 +90,45 @@ const TransactionForm = ({ onComplete, initialData }) => {
         }
 
         if (receiptImage) {
-            await saveReceipt(txId, receiptImage);
+            try {
+                await saveReceipt(txId, receiptImage);
+            } catch (err) {
+                console.error('Failed to save receipt to IndexedDB:', err);
+            }
         }
-        
+
         pushToSupabase();
         onComplete();
     };
 
     return (
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-            {/* Type Selector */}
-            <div style={{ 
-                display: 'flex', 
-                background: 'var(--input-bg)', 
-                padding: '4px', 
-                borderRadius: '16px',
+            {/* Type Selector — pastel pill toggle */}
+            <div style={{
+                display: 'flex',
+                background: 'var(--badge-bg)',
+                padding: '4px',
+                borderRadius: '18px',
                 position: 'relative'
             }}>
-                <motion.div 
+                <motion.div
                     animate={{ x: formData.type === 'expense' ? 0 : '100%' }}
                     transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
-                    style={{ 
+                    style={{
                         position: 'absolute', top: '4px', left: '4px', bottom: '4px', width: 'calc(50% - 4px)',
-                        background: formData.type === 'expense' ? 'var(--accent-danger)' : 'var(--accent-success)',
-                        borderRadius: '12px',
-                        boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+                        background: formData.type === 'expense' ? 'var(--bento-blush)' : 'var(--bento-mint)',
+                        borderRadius: '14px',
                     }}
                 />
                 <button
                     type="button"
                     onClick={() => setFormData({ ...formData, type: 'expense', category: data.customCategories.find(c => c.type === 'expense')?.name || '' })}
-                    style={{ flex: 1, zIndex: 1, height: '44px', background: 'none', border: 'none', color: formData.type === 'expense' ? 'white' : 'var(--text-secondary)', fontWeight: '700', fontSize: '14px', cursor: 'pointer' }}
+                    style={{ flex: 1, zIndex: 1, height: '44px', background: 'none', border: 'none', color: formData.type === 'expense' ? 'var(--bento-blush-ink)' : 'var(--text-secondary)', fontWeight: '700', fontSize: '14px', cursor: 'pointer' }}
                 >Expense</button>
                 <button
                     type="button"
                     onClick={() => setFormData({ ...formData, type: 'income', category: data.customCategories.find(c => c.type === 'income')?.name || '' })}
-                    style={{ flex: 1, zIndex: 1, height: '44px', background: 'none', border: 'none', color: formData.type === 'income' ? 'white' : 'var(--text-secondary)', fontWeight: '700', fontSize: '14px', cursor: 'pointer' }}
+                    style={{ flex: 1, zIndex: 1, height: '44px', background: 'none', border: 'none', color: formData.type === 'income' ? 'var(--bento-mint-ink)' : 'var(--text-secondary)', fontWeight: '700', fontSize: '14px', cursor: 'pointer' }}
                 >Income</button>
             </div>
 
@@ -135,7 +138,11 @@ const TransactionForm = ({ onComplete, initialData }) => {
                     Amount ({currency})
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-                    <span style={{ fontSize: '32px', fontWeight: '900', color: formData.type === 'expense' ? 'var(--accent-danger)' : 'var(--accent-success)' }}>
+                    <span style={{
+                        fontSize: '28px', fontWeight: '700',
+                        fontFamily: 'var(--font-display)',
+                        color: formData.type === 'expense' ? 'var(--bento-blush-ink)' : 'var(--bento-mint-ink)'
+                    }}>
                         {currency === 'TWD' ? 'NT$' : 'Rp'}
                     </span>
                     <input
@@ -145,16 +152,19 @@ const TransactionForm = ({ onComplete, initialData }) => {
                         placeholder="0"
                         value={formData.amount}
                         onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
-                        style={{ 
-                            fontSize: '48px', 
-                            fontWeight: '900', 
-                            textAlign: 'left', 
-                            width: '200px', 
-                            background: 'none', 
-                            border: 'none', 
+                        style={{
+                            fontSize: '44px',
+                            fontWeight: '800',
+                            fontFamily: 'var(--font-display)',
+                            letterSpacing: '-1.5px',
+                            textAlign: 'left',
+                            width: '200px',
+                            background: 'none',
+                            border: 'none',
                             color: 'var(--text-primary)',
                             outline: 'none',
-                            padding: 0
+                            padding: 0,
+                            margin: 0,
                         }}
                     />
                 </div>
