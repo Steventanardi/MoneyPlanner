@@ -1,5 +1,5 @@
 import React from 'react';
-import { Sparkles, ArrowUpRight, ArrowDownLeft } from 'lucide-react';
+import { Sparkles, ArrowUpRight, ArrowDownLeft, Clock } from 'lucide-react';
 import { useStore } from '../../store/useStore';
 
 const BalanceCard = ({ balance, expenseDelta, expense, income }) => {
