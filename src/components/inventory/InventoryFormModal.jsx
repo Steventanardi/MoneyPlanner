@@ -28,7 +28,7 @@ const InventoryFormModal = ({ showModal, editItem, form, setForm, isFormValid, o
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           style={{
-            position: 'fixed', inset: 0, zIndex: 1000,
+            position: 'fixed', inset: 0, zIndex: 3000,
             background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(10px)',
             display: 'flex',
             alignItems: isDesktop ? 'center' : 'flex-end',
